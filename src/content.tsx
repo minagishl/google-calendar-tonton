@@ -19,7 +19,7 @@ const isTimeInRange = (
   const [hours, minutes] = time.split(":").map(Number);
   const timeDate = new Date(startTime);
   timeDate.setHours(hours, minutes, 0, 0);
-  return timeDate >= startTime && timeDate <= endTime;
+  return timeDate >= startTime && timeDate < endTime;
 };
 
 const extractSchedules = async () => {
@@ -181,6 +181,7 @@ const selectTimeSlots = (date: Date) => {
             view: window,
           });
           span.dispatchEvent(event);
+          console.log(`Dispatched span with ID: ${spanId}`);
         }
       }
     }
