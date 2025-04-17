@@ -128,7 +128,8 @@ const markBusyTimeSlots = (date: Date) => {
     'div[id="add-form-dlg"]'
   ) as HTMLElement;
   if (button && dialog.style.visibility === "hidden") {
-    (button as HTMLElement).click();
+    const event = new Event("click", { bubbles: true, cancelable: true });
+    button.dispatchEvent(event);
 
     const target = document.querySelector(
       'fieldset[id="schedule_list"] input[onclick="MT_setTimelineColor(1)"]'
