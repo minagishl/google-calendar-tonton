@@ -74,6 +74,38 @@ const IcsButton = (): React.ReactNode => {
   );
 };
 
+const AncherButton = (): React.ReactNode => {
+  const handleClick = () => {
+    const button = document.querySelector("a[id='add-ancher']");
+    if (button) {
+      (button as HTMLElement).click();
+    } else {
+      alert("Ancher button not found!");
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      style={{
+        position: "fixed",
+        top: "120px",
+        right: "20px",
+        padding: "8px 16px",
+        backgroundColor: "#FF9800",
+        color: "white",
+        border: "none",
+        borderRadius: "4px",
+        cursor: "pointer",
+        zIndex: 9999,
+      }}
+    >
+      Open Add Ancher
+    </button>
+  );
+};
+
 const ExtractButton = (): React.ReactNode => {
   const extractSchedules = () => {
     const schedules = document.querySelectorAll(".schedulelist");
@@ -152,5 +184,6 @@ root.render(
   <>
     <ExtractButton />
     <IcsButton />
+    <AncherButton />
   </>
 );
