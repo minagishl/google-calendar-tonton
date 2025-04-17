@@ -34,14 +34,14 @@ const applyCalendarEvents = async (): Promise<void> => {
         localStorage.setItem("calendarUrl", url);
         return applyCalendarEvents();
       }
-      console.error("Calendar URL not set!");
+      console.log("Calendar URL not set!");
       return;
     }
   }
 
   const calendarUrl = localStorage.getItem("calendarUrl");
   if (!calendarUrl) {
-    console.error("Calendar URL not set!");
+    console.log("Calendar URL not set!");
     return;
   }
 
@@ -118,7 +118,7 @@ const applyCalendarEvents = async (): Promise<void> => {
       });
 
       if (busyTimeSlots.length === 0) {
-        console.debug("No available time slots found");
+        console.log("No available time slots found");
       } else {
         for (const slot of busyTimeSlots) {
           markBusyTimeSlots(new Date(`${schedule.date}T${slot.time}`));
