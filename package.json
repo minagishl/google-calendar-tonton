@@ -13,10 +13,7 @@
     "format:write": "biome format --write ./src",
     "lint": "biome lint ./src"
   },
-  "keywords": [
-    "google-calendar",
-    "chrome-extension"
-  ],
+  "keywords": ["google-calendar", "chrome-extension"],
   "author": "minagishl",
   "license": "MIT",
   "packageManager": "pnpm@10.8.1",
@@ -31,9 +28,7 @@
     "vite": "6.2.6"
   },
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "@biomejs/biome"
-    ]
+    "onlyBuiltDependencies": ["@biomejs/biome"]
   },
   "dependencies": {
     "react": "^19.1.0",
