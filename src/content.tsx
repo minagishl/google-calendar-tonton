@@ -91,13 +91,13 @@ const extractSchedules = async () => {
         return eventStart.toISOString().split("T")[0] === schedule.date;
       });
 
-      const availableTimeSlots = schedule.availableSlots.filter((slot) => {
+      const busyTimeSlots = schedule.availableSlots.filter((slot) => {
         const [hours, minutes] = slot.time.split(":").map(Number);
         const slotDate = new Date(schedule.date);
         slotDate.setHours(hours, minutes, 0, 0);
 
         // Check if the slot overlaps with any event
-        return !dateEvents.some((event) => {
+        return dateEvents.some((event) => {
           const eventStart = new Date(event.startDate);
           const eventEnd = new Date(event.endDate);
           return isTimeInRange(slot.time, eventStart, eventEnd);
@@ -105,10 +105,11 @@ const extractSchedules = async () => {
       });
 
       console.log(`\nAvailable slots for ${schedule.date}:`);
-      if (availableTimeSlots.length === 0) {
+      if (busyTimeSlots.length === 0) {
         console.log("No available time slots found");
       } else {
-        for (const slot of availableTimeSlots) {
+        for (const slot of busyTimeSlots) {
+          selectTimeSlots(new Date(`${schedule.date}T${slot.time}`));
           console.log(
             `${slot.time} (${slot.isHalfHour ? "30 min" : "60 min"})`
           );
@@ -120,44 +121,74 @@ const extractSchedules = async () => {
   }
 };
 
-const AncherButton = (): React.ReactNode => {
-  const handleClick = () => {
-    const button = document.querySelector("a[id='add-ancher']");
-    if (button) {
-      (button as HTMLElement).click();
+const selectTimeSlots = (date: Date) => {
+  const button = document.querySelector("a[id='add-ancher']");
+  const dialog = document.querySelector(
+    'div[id="add-form-dlg"]'
+  ) as HTMLElement;
+  if (button && dialog.style.visibility === "hidden") {
+    (button as HTMLElement).click();
 
-      const target = document.querySelector(
-        'fieldset[id="schedule_list"] input[onclick="MT_setTimelineColor(1)"]'
-      ) as HTMLInputElement;
-      if (target) {
-        target.checked = true;
-        target.click();
-      }
-    } else {
-      alert("Ancher button not found!");
+    const target = document.querySelector(
+      'fieldset[id="schedule_list"] input[onclick="MT_setTimelineColor(1)"]'
+    ) as HTMLInputElement;
+    if (target) {
+      target.checked = true;
+      target.click();
     }
-  };
+  }
 
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      style={{
-        position: "fixed",
-        top: "70px",
-        right: "20px",
-        padding: "8px 16px",
-        backgroundColor: "#FF9800",
-        color: "white",
-        border: "none",
-        borderRadius: "4px",
-        cursor: "pointer",
-        zIndex: 9999,
-      }}
-    >
-      Open Add Ancher
-    </button>
+  const schedules = document.querySelectorAll(
+    'fieldset[id="schedule_list"] > table:not(:first-child)'
   );
+
+  // Format the input date as "YYYY/MM/DD"
+  const pad = (n: number) => n.toString().padStart(2, "0");
+
+  schedules.forEach((schedule, idx) => {
+    const labelElement = schedule.querySelector(
+      'tbody > tr > td > div[class="nowrap-pop"]'
+    );
+    const dateText = labelElement ? labelElement.textContent?.trim() : "";
+    if (!dateText) return;
+
+    // Compare only the date part
+    const inputDate = new Date(
+      `${date.getFullYear()}/${(date.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")}`
+    );
+
+    const labelDate = new Date(dateText.replace(/-/g, "/"));
+
+    // Compare only the date part (ignore time)
+    if (
+      inputDate.getFullYear() === labelDate.getFullYear() &&
+      inputDate.getMonth() === labelDate.getMonth() &&
+      inputDate.getDate() === labelDate.getDate()
+    ) {
+      console.log("Found matching date:", dateText);
+      // Format time as "HHMM"
+      const hour = pad(date.getHours());
+      const minute = pad(date.getMinutes());
+      const timeStr = `${hour}${minute}`;
+      // Use idx+1 for the number part
+      const spanId = `mtgtimeedit_${idx + 1}_${timeStr}`;
+      const span = schedule.querySelector(
+        `span[id="${spanId}"]`
+      ) as HTMLElement | null;
+      if (span) {
+        for (const type of ["mousedown", "mouseup"]) {
+          const event = new MouseEvent(type, {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+          });
+          span.dispatchEvent(event);
+        }
+      }
+    }
+  });
 };
 
 const ExtractButton = (): React.ReactNode => {
@@ -189,9 +220,4 @@ document.body.appendChild(container);
 
 // Render the buttons
 const root = createRoot(container);
-root.render(
-  <>
-    <ExtractButton />
-    <AncherButton />
-  </>
-);
+root.render(<ExtractButton />);
