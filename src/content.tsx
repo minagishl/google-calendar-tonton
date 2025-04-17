@@ -1,5 +1,6 @@
 import type React from "react";
 import { createRoot } from "react-dom/client";
+import { useState } from "react";
 import { icsToJson } from "./utils/icsToJson";
 
 interface TimeSlot {
@@ -185,10 +186,22 @@ const markBusyTimeSlots = (date: Date) => {
 };
 
 const ApplyCalendarButton = (): React.ReactNode => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleApplyCalendar = async () => {
+    setIsLoading(true);
+    try {
+      await applyCalendarEvents();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <button
       type="button"
-      onClick={applyCalendarEvents}
+      onClick={handleApplyCalendar}
+      disabled={isLoading}
       style={{
         position: "fixed",
         top: "20px",
@@ -200,12 +213,37 @@ const ApplyCalendarButton = (): React.ReactNode => {
         borderRadius: "4px",
         cursor: "pointer",
         zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
       }}
     >
       Apply Calendar
+      {isLoading && (
+        <div
+          style={{
+            width: "8px",
+            height: "8px",
+            border: "1.5px solid #ffffff",
+            borderTop: "1.5px solid transparent",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+          }}
+        />
+      )}
     </button>
   );
 };
+
+// Define the spin animation
+const style = document.createElement("style");
+style.textContent = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+document.head.appendChild(style);
 
 // Create container for our button
 const container = document.createElement("div");
