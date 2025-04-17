@@ -337,6 +337,7 @@ document.head.appendChild(style);
 
 // Create container for our button
 const container = document.createElement("div");
+container.id = "google-calendar-tonton";
 document.body.appendChild(container);
 
 // Render the button container
