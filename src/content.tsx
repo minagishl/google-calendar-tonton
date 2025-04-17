@@ -24,15 +24,23 @@ const isTimeInRange = (
 };
 
 const applyCalendarEvents = async (): Promise<void> => {
-  // Check calendar URL first
+  // Check if cache exists
+  const cache = await chrome.storage.local.get(["icsCache"]);
+  if (!cache.icsCache) {
+    const calendarUrl = localStorage.getItem("calendarUrl");
+    if (!calendarUrl) {
+      const url = prompt("Please enter your Google Calendar ICS URL:");
+      if (url) {
+        localStorage.setItem("calendarUrl", url);
+        return applyCalendarEvents();
+      }
+      console.error("Calendar URL not set!");
+      return;
+    }
+  }
+
   const calendarUrl = localStorage.getItem("calendarUrl");
   if (!calendarUrl) {
-    const url = prompt("Please enter your Google Calendar ICS URL:");
-    if (url) {
-      localStorage.setItem("calendarUrl", url);
-      return applyCalendarEvents();
-    }
-
     console.error("Calendar URL not set!");
     return;
   }
@@ -229,9 +237,12 @@ const ButtonContainer = (): React.ReactNode => {
   };
 
   const handleClearCache = async () => {
-    localStorage.removeItem("calendarUrl");
     setHasCachedData(false);
     await chrome.runtime.sendMessage({ type: "CLEAR_ICS_CACHE" });
+  };
+
+  const handleResetUrl = () => {
+    localStorage.removeItem("calendarUrl");
   };
 
   return (
@@ -245,13 +256,28 @@ const ButtonContainer = (): React.ReactNode => {
         zIndex: 9999,
       }}
     >
+      <button
+        type="button"
+        onClick={handleResetUrl}
+        style={{
+          padding: "8px 16px",
+          backgroundColor: "#dc3545",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+          marginRight: "8px",
+        }}
+      >
+        Reset URL
+      </button>
       {hasCachedData && (
         <button
           type="button"
           onClick={handleClearCache}
           style={{
             padding: "8px 16px",
-            backgroundColor: "#dc3545",
+            backgroundColor: "#ff9800",
             color: "white",
             border: "none",
             borderRadius: "4px",
