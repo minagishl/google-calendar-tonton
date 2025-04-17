@@ -125,6 +125,11 @@ const AncherButton = (): React.ReactNode => {
     const button = document.querySelector("a[id='add-ancher']");
     if (button) {
       (button as HTMLElement).click();
+
+      const target = document.querySelector(
+        'fieldset[id="schedule_list"] input[onclick="MT_setTimelineColor(1)"]'
+      ) as HTMLInputElement;
+      if (target) target.checked = true;
     } else {
       alert("Ancher button not found!");
     }
