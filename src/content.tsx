@@ -67,7 +67,13 @@ const applyCalendarEvents = async () => {
   // Get ICS data
   const calendarUrl = localStorage.getItem("calendarUrl");
   if (!calendarUrl) {
-    console.error("Calendar URL not set!");
+    const url = prompt("Please enter your Google Calendar ICS URL:");
+    if (url) {
+      localStorage.setItem("calendarUrl", url);
+      applyCalendarEvents();
+    } else {
+      console.error("Calendar URL not set!");
+    }
     return;
   }
 
@@ -222,6 +228,8 @@ const ButtonContainer = (): React.ReactNode => {
   };
 
   const handleClearCache = async () => {
+    localStorage.removeItem("calendarUrl");
+    setHasCachedData(false);
     await chrome.runtime.sendMessage({ type: "CLEAR_ICS_CACHE" });
   };
 
