@@ -7,6 +7,11 @@ const manifest = defineManifest({
   name: "Google Calendar Tonton",
   version: "1.0.0",
   description: "Auto-send Tonton's schedule from Google Calendar.",
+  host_permissions: ["https://calendar.google.com/*"],
+  background: {
+    service_worker: "src/background.ts",
+    type: "module",
+  },
   content_scripts: [
     {
       matches: ["https://tonton.amaneku.com/list.php?id=*"],
@@ -21,6 +26,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         content: "src/content.tsx",
+        background: "src/background.ts",
       },
     },
   },

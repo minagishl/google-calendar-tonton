@@ -1,5 +1,7 @@
 import type React from "react";
 import { createRoot } from "react-dom/client";
+import { useState, useEffect } from "react";
+import { icsToJson } from "./utils/icsToJson";
 
 interface TimeSlot {
   time: string;
@@ -10,6 +12,67 @@ interface ScheduleData {
   date: string;
   availableSlots: TimeSlot[];
 }
+
+const IcsButton = (): React.ReactNode => {
+  const [calendarUrl, setCalendarUrl] = useState<string>("");
+
+  useEffect(() => {
+    const storedUrl = localStorage.getItem("calendarUrl");
+    if (storedUrl) {
+      setCalendarUrl(storedUrl);
+    } else {
+      const url = prompt("Please enter your Google Calendar ICS URL:");
+      if (url) {
+        localStorage.setItem("calendarUrl", url);
+        setCalendarUrl(url);
+      }
+    }
+  }, []);
+
+  const fetchIcsData = async () => {
+    if (!calendarUrl) {
+      alert("Calendar URL not set!");
+      return;
+    }
+
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: "FETCH_ICS",
+        url: calendarUrl,
+      });
+
+      if (response.success) {
+        console.log("ICS Data:", icsToJson(response.data));
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (error) {
+      console.error("Error fetching ICS data:", error);
+      alert("Error fetching ICS data. Please check the console for details.");
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={fetchIcsData}
+      style={{
+        position: "fixed",
+        top: "70px",
+        right: "20px",
+        padding: "8px 16px",
+        backgroundColor: "#2196F3",
+        color: "white",
+        border: "none",
+        borderRadius: "4px",
+        cursor: "pointer",
+        zIndex: 9999,
+      }}
+    >
+      Download ICS
+    </button>
+  );
+};
 
 const ExtractButton = (): React.ReactNode => {
   const extractSchedules = () => {
@@ -83,6 +146,11 @@ const ExtractButton = (): React.ReactNode => {
 const container = document.createElement("div");
 document.body.appendChild(container);
 
-// Render the button
+// Render the buttons
 const root = createRoot(container);
-root.render(<ExtractButton />);
+root.render(
+  <>
+    <ExtractButton />
+    <IcsButton />
+  </>
+);
