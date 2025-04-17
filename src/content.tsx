@@ -242,7 +242,12 @@ const ButtonContainer = (): React.ReactNode => {
   };
 
   const handleResetUrl = () => {
-    localStorage.removeItem("calendarUrl");
+    const confirmed = window.confirm(
+      "Are you sure you want to reset the calendar URL?"
+    );
+    if (confirmed) {
+      localStorage.removeItem("calendarUrl");
+    }
   };
 
   return (
