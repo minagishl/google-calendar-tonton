@@ -1,6 +1,6 @@
 import type React from "react";
 import { createRoot } from "react-dom/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { icsToJson } from "./utils/icsToJson";
 
 interface TimeSlot {
@@ -185,8 +185,32 @@ const markBusyTimeSlots = (date: Date) => {
   });
 };
 
-const ApplyCalendarButton = (): React.ReactNode => {
+const ButtonContainer = (): React.ReactNode => {
   const [isLoading, setIsLoading] = useState(false);
+  const [hasCachedData, setHasCachedData] = useState(false);
+
+  // Check if cache exists on mount
+  useEffect(() => {
+    chrome.storage.local.get(["icsCache"], (result) => {
+      setHasCachedData(!!result.icsCache);
+    });
+
+    // Listen for cache changes
+    const listener = (changes: {
+      [key: string]: chrome.storage.StorageChange;
+    }) => {
+      if (changes.icsCache) {
+        setHasCachedData(!!changes.icsCache.newValue);
+      }
+    };
+
+    chrome.storage.onChanged.addListener(listener);
+
+    // Cleanup listener on unmount
+    return () => {
+      chrome.storage.onChanged.removeListener(listener);
+    };
+  }, []);
 
   const handleApplyCalendar = async () => {
     setIsLoading(true);
@@ -197,41 +221,68 @@ const ApplyCalendarButton = (): React.ReactNode => {
     }
   };
 
+  const handleClearCache = async () => {
+    await chrome.runtime.sendMessage({ type: "CLEAR_ICS_CACHE" });
+  };
+
   return (
-    <button
-      type="button"
-      onClick={handleApplyCalendar}
-      disabled={isLoading}
+    <div
       style={{
         position: "fixed",
         top: "20px",
         right: "20px",
-        padding: "8px 16px",
-        backgroundColor: "#4CAF50",
-        color: "white",
-        border: "none",
-        borderRadius: "4px",
-        cursor: "pointer",
-        zIndex: 9999,
         display: "flex",
-        alignItems: "center",
         gap: "8px",
+        zIndex: 9999,
       }}
     >
-      Apply Calendar
-      {isLoading && (
-        <div
+      {hasCachedData && (
+        <button
+          type="button"
+          onClick={handleClearCache}
           style={{
-            width: "8px",
-            height: "8px",
-            border: "1.5px solid #ffffff",
-            borderTop: "1.5px solid transparent",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
+            padding: "8px 16px",
+            backgroundColor: "#dc3545",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
           }}
-        />
+        >
+          Clear Cache
+        </button>
       )}
-    </button>
+      <button
+        type="button"
+        onClick={handleApplyCalendar}
+        disabled={isLoading}
+        style={{
+          padding: "8px 16px",
+          backgroundColor: "#4CAF50",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}
+      >
+        Apply Calendar
+        {isLoading && (
+          <div
+            style={{
+              width: "8px",
+              height: "8px",
+              border: "1.5px solid #ffffff",
+              borderTop: "1.5px solid transparent",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+            }}
+          />
+        )}
+      </button>
+    </div>
   );
 };
 
@@ -249,6 +300,6 @@ document.head.appendChild(style);
 const container = document.createElement("div");
 document.body.appendChild(container);
 
-// Render the buttons
+// Render the button container
 const root = createRoot(container);
-root.render(<ApplyCalendarButton />);
+root.render(<ButtonContainer />);

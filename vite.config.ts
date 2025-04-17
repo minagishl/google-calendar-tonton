@@ -7,6 +7,7 @@ const manifest = defineManifest({
   name: "Google Calendar Tonton",
   version: "1.0.0",
   description: "Auto-send Tonton's schedule from Google Calendar.",
+  permissions: ["storage"],
   host_permissions: ["https://calendar.google.com/*"],
   background: {
     service_worker: "src/background.ts",
