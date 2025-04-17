@@ -4,7 +4,6 @@ import { icsToJson } from "./utils/icsToJson";
 
 interface TimeSlot {
   time: string;
-  isHalfHour: boolean;
 }
 
 interface ScheduleData {
@@ -49,7 +48,6 @@ const extractSchedules = async () => {
         if (isEnabled) {
           availableSlots.push({
             time: formattedTime,
-            isHalfHour: slot.classList.contains("timesel_30"),
           });
         }
       }
@@ -110,9 +108,7 @@ const extractSchedules = async () => {
       } else {
         for (const slot of busyTimeSlots) {
           selectTimeSlots(new Date(`${schedule.date}T${slot.time}`));
-          console.log(
-            `${slot.time} (${slot.isHalfHour ? "30 min" : "60 min"})`
-          );
+          console.log(slot.time);
         }
       }
     }
