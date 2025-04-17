@@ -22,7 +22,7 @@ const isTimeInRange = (
   return timeDate >= startTime && timeDate < endTime;
 };
 
-const extractSchedules = async () => {
+const applyCalendarEvents = async () => {
   // Get available slots from UI
   const schedules = document.querySelectorAll(".schedulelist");
   const result: ScheduleData[] = [];
@@ -106,7 +106,7 @@ const extractSchedules = async () => {
         console.debug("No available time slots found");
       } else {
         for (const slot of busyTimeSlots) {
-          selectTimeSlots(new Date(`${schedule.date}T${slot.time}`));
+          markBusyTimeSlots(new Date(`${schedule.date}T${slot.time}`));
         }
       }
     }
@@ -115,7 +115,7 @@ const extractSchedules = async () => {
   }
 };
 
-const selectTimeSlots = (date: Date) => {
+const markBusyTimeSlots = (date: Date) => {
   const button = document.querySelector("a[id='add-ancher']");
   const dialog = document.querySelector(
     'div[id="add-form-dlg"]'
@@ -184,11 +184,11 @@ const selectTimeSlots = (date: Date) => {
   });
 };
 
-const ExtractButton = (): React.ReactNode => {
+const ApplyCalendarButton = (): React.ReactNode => {
   return (
     <button
       type="button"
-      onClick={extractSchedules}
+      onClick={applyCalendarEvents}
       style={{
         position: "fixed",
         top: "20px",
@@ -202,7 +202,7 @@ const ExtractButton = (): React.ReactNode => {
         zIndex: 9999,
       }}
     >
-      Extract Schedule
+      Apply Calendar
     </button>
   );
 };
@@ -213,4 +213,4 @@ document.body.appendChild(container);
 
 // Render the buttons
 const root = createRoot(container);
-root.render(<ExtractButton />);
+root.render(<ApplyCalendarButton />);
