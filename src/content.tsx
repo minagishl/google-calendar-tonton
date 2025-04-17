@@ -23,7 +23,20 @@ const isTimeInRange = (
   return timeDate >= startTime && timeDate < endTime;
 };
 
-const applyCalendarEvents = async () => {
+const applyCalendarEvents = async (): Promise<void> => {
+  // Check calendar URL first
+  const calendarUrl = localStorage.getItem("calendarUrl");
+  if (!calendarUrl) {
+    const url = prompt("Please enter your Google Calendar ICS URL:");
+    if (url) {
+      localStorage.setItem("calendarUrl", url);
+      return applyCalendarEvents();
+    }
+
+    console.error("Calendar URL not set!");
+    return;
+  }
+
   // Get available slots from UI
   const schedules = document.querySelectorAll(".schedulelist");
   const result: ScheduleData[] = [];
@@ -62,19 +75,6 @@ const applyCalendarEvents = async () => {
         availableSlots,
       });
     }
-  }
-
-  // Get ICS data
-  const calendarUrl = localStorage.getItem("calendarUrl");
-  if (!calendarUrl) {
-    const url = prompt("Please enter your Google Calendar ICS URL:");
-    if (url) {
-      localStorage.setItem("calendarUrl", url);
-      applyCalendarEvents();
-    } else {
-      console.error("Calendar URL not set!");
-    }
-    return;
   }
 
   try {
