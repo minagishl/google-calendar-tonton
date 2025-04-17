@@ -9,6 +9,12 @@ const manifest = defineManifest({
   description: "Auto-send Tonton's schedule from Google Calendar.",
   permissions: ["storage"],
   host_permissions: ["https://calendar.google.com/*"],
+  icons: {
+    "16": "src/assets/icon16.png",
+    "19": "src/assets/icon19.png",
+    "38": "src/assets/icon38.png",
+    "128": "src/assets/icon128.png",
+  },
   background: {
     service_worker: "src/background.ts",
     type: "module",
