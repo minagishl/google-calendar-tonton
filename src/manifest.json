@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Tonton Schedule Extractor",
+  "version": "1.0.0",
+  "description": "Extract schedule information from Tonton's calendar",
+  "permissions": [],
+  "content_scripts": [
+    {
+      "matches": ["https://tonton.amaneku.com/list.php?id=*"],
+      "js": ["content.tsx"]
+    }
+  ]
+}

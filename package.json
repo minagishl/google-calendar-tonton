@@ -1,0 +1,42 @@
+{
+  "name": "google-calendar-tonton",
+  "version": "1.0.0",
+  "description": "Auto-send Tonton’s schedule from Google Calendar.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "check": "biome check ./src",
+    "check:write": "biome check --write ./src",
+    "format": "biome format .",
+    "format:write": "biome format --write ./src",
+    "lint": "biome lint ./src"
+  },
+  "keywords": [
+    "google-calendar",
+    "chrome-extension"
+  ],
+  "author": "minagishl",
+  "license": "MIT",
+  "packageManager": "pnpm@10.8.1",
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@crxjs/vite-plugin": "2.0.0-beta.32",
+    "@types/chrome": "0.0.315",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.0",
+    "typescript": "5.8.3",
+    "vite": "6.2.6"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@biomejs/biome"
+    ]
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}

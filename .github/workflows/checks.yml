@@ -1,0 +1,58 @@
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set Up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10.8.1"
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Run Lint
+        run: pnpm lint
+
+  scan:
+    name: Scan
+    runs-on: ${{ github.event_name == 'push' && 'ubuntu-latest' || 'macos-latest' }}
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: "javascript-typescript"
+          build-mode: "none"
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"
