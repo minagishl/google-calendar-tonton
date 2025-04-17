@@ -271,7 +271,6 @@ const ButtonContainer = (): React.ReactNode => {
           border: "none",
           borderRadius: "4px",
           cursor: "pointer",
-          marginRight: "8px",
         }}
       >
         Reset URL
