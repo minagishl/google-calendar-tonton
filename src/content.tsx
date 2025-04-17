@@ -102,13 +102,11 @@ const extractSchedules = async () => {
         });
       });
 
-      console.log(`\nAvailable slots for ${schedule.date}:`);
       if (busyTimeSlots.length === 0) {
-        console.log("No available time slots found");
+        console.debug("No available time slots found");
       } else {
         for (const slot of busyTimeSlots) {
           selectTimeSlots(new Date(`${schedule.date}T${slot.time}`));
-          console.log(slot.time);
         }
       }
     }
@@ -163,7 +161,6 @@ const selectTimeSlots = (date: Date) => {
       inputDate.getMonth() === labelDate.getMonth() &&
       inputDate.getDate() === labelDate.getDate()
     ) {
-      console.log("Found matching date:", dateText);
       // Format time as "HHMM"
       const hour = pad(date.getHours());
       const minute = pad(date.getMinutes());
@@ -181,7 +178,6 @@ const selectTimeSlots = (date: Date) => {
             view: window,
           });
           span.dispatchEvent(event);
-          console.log(`Dispatched span with ID: ${spanId}`);
         }
       }
     }
