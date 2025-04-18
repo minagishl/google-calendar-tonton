@@ -106,10 +106,12 @@ function Options() {
           value={calendarUrl}
           onChange={(e) => setCalendarUrl(e.target.value)}
           style={{
-            width: "calc(100% - 16px)",
-            padding: "8px",
+            width: "100%",
+            height: "32px",
+            padding: "0 8px",
             borderRadius: "4px",
             border: "1px solid #ccc",
+            boxSizing: "border-box",
           }}
         />
       </div>
@@ -176,9 +178,11 @@ function Options() {
                 onChange={(e) => setStartTime(e.target.value)}
                 disabled={!enforceWorkingHours}
                 style={{
-                  padding: "8px",
+                  height: "32px",
+                  padding: "0 8px",
                   borderRadius: "4px",
                   border: "1px solid #ccc",
+                  boxSizing: "border-box",
                 }}
               />
             </label>
@@ -194,9 +198,11 @@ function Options() {
                 onChange={(e) => setEndTime(e.target.value)}
                 disabled={!enforceWorkingHours}
                 style={{
-                  padding: "8px",
+                  height: "32px",
+                  padding: "0 8px",
                   borderRadius: "4px",
                   border: "1px solid #ccc",
+                  boxSizing: "border-box",
                 }}
               />
             </label>
@@ -224,9 +230,11 @@ function Options() {
           }
           style={{
             width: "100%",
-            padding: "8px",
+            height: "32px",
+            padding: "0 8px",
             borderRadius: "4px",
             border: "1px solid #ccc",
+            boxSizing: "border-box",
           }}
         >
           <option value="right-top">Right Top</option>
