@@ -291,6 +291,9 @@ const ButtonContainer: React.FC = () => {
             | "left-bottom"
         );
       }
+      if (changes.minimalMode) {
+        setMinimalMode(changes.minimalMode.newValue as boolean);
+      }
     };
 
     browser.storage.onChanged.addListener(listener);
