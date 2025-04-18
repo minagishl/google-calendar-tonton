@@ -56,6 +56,10 @@ pnpm build
 - Uses ical.js for reliable calendar data parsing
 - Biome for consistent code formatting and linting
 
+## Browser Compatibility
+
+While this extension is primarily tested on Chrome, it uses [webextension-polyfill](https://github.com/mozilla/webextension-polyfill) which should make it compatible with other modern browsers that support Web Extensions (though this hasn't been extensively tested).
+
 ## Requirements
 
 - Node.js 20 or higher
