@@ -237,10 +237,25 @@ const markBusyTimeSlots = (date: Date): void => {
 const ButtonContainer: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasCachedData, setHasCachedData] = useState(false);
+  const [buttonPosition, setButtonPosition] = useState<
+    "right-top" | "right-bottom" | "left-top" | "left-bottom"
+  >("right-top");
 
-  // Check if cache exists on mount
+  // Load settings and check cache on mount
   useEffect(() => {
     (async () => {
+      // Load button position setting
+      const settings = await browser.storage.local.get("buttonPosition");
+      if (settings.buttonPosition) {
+        setButtonPosition(
+          settings.buttonPosition as
+            | "right-top"
+            | "right-bottom"
+            | "left-top"
+            | "left-bottom"
+        );
+      }
+
       const result = await browser.storage.local.get("icsCache");
       setHasCachedData(!!result.icsCache);
     })();
@@ -297,8 +312,16 @@ const ButtonContainer: React.FC = () => {
     <div
       style={{
         position: "fixed",
-        top: "20px",
-        right: "20px",
+        ...(buttonPosition === "right-top" && { top: "20px", right: "20px" }),
+        ...(buttonPosition === "right-bottom" && {
+          bottom: "20px",
+          right: "20px",
+        }),
+        ...(buttonPosition === "left-top" && { top: "20px", left: "20px" }),
+        ...(buttonPosition === "left-bottom" && {
+          bottom: "20px",
+          left: "20px",
+        }),
         display: "flex",
         gap: "8px",
         zIndex: 9999,

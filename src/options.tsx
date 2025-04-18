@@ -10,6 +10,9 @@ function Options() {
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
   const [enforceWorkingHours, setEnforceWorkingHours] = useState(false);
+  const [buttonPosition, setButtonPosition] = useState<
+    "right-top" | "right-bottom" | "left-top" | "left-bottom"
+  >("right-top");
 
   useEffect(() => {
     // Load saved settings
@@ -21,6 +24,7 @@ function Options() {
         "startTime",
         "endTime",
         "enforceWorkingHours",
+        "buttonPosition",
       ]);
 
       if (result.calendarUrl) {
@@ -46,6 +50,16 @@ function Options() {
       if (result.enforceWorkingHours) {
         setEnforceWorkingHours(result.enforceWorkingHours as boolean);
       }
+
+      if (result.buttonPosition) {
+        setButtonPosition(
+          result.buttonPosition as
+            | "right-top"
+            | "right-bottom"
+            | "left-top"
+            | "left-bottom"
+        );
+      }
     })();
   }, []);
 
@@ -69,6 +83,7 @@ function Options() {
         startTime,
         endTime,
         enforceWorkingHours,
+        buttonPosition,
       })
       .then(() => {
         alert("Settings have been saved");
@@ -187,6 +202,38 @@ function Options() {
             </label>
           </div>
         </div>
+      </div>
+      <div style={{ marginBottom: "20px" }}>
+        <label
+          htmlFor="buttonPosition"
+          style={{ display: "block", marginBottom: "8px" }}
+        >
+          Button Position
+        </label>
+        <select
+          id="buttonPosition"
+          value={buttonPosition}
+          onChange={(e) =>
+            setButtonPosition(
+              e.target.value as
+                | "right-top"
+                | "right-bottom"
+                | "left-top"
+                | "left-bottom"
+            )
+          }
+          style={{
+            width: "100%",
+            padding: "8px",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+          }}
+        >
+          <option value="right-top">Right Top</option>
+          <option value="right-bottom">Right Bottom</option>
+          <option value="left-top">Left Top</option>
+          <option value="left-bottom">Left Bottom</option>
+        </select>
       </div>
       <Button onClick={handleSave} variant="other">
         Save
