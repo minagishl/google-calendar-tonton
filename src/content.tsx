@@ -170,6 +170,16 @@ const applyCalendarEvents = async (): Promise<void> => {
 };
 
 const markBusyTimeSlots = (date: Date): void => {
+  // Ensure the color selector is set to "busy" regardless of dialog state
+  const target = document.querySelector<HTMLInputElement>(
+    'fieldset[id="schedule_list"] input[onclick="MT_setTimelineColor(1)"]'
+  );
+  if (target) {
+    target.checked = true;
+    target.click();
+  }
+
+  // If dialog is not visible, open it
   const button = document.querySelector<HTMLAnchorElement>("a#add-ancher");
   const dialog = document.querySelector<HTMLElement>("div#add-form-dlg");
 
@@ -177,14 +187,6 @@ const markBusyTimeSlots = (date: Date): void => {
     button.dispatchEvent(
       new Event("click", { bubbles: true, cancelable: true })
     );
-
-    const target = document.querySelector<HTMLInputElement>(
-      'fieldset[id="schedule_list"] input[onclick="MT_setTimelineColor(1)"]'
-    );
-    if (target) {
-      target.checked = true;
-      target.click();
-    }
   }
 
   const schedules = document.querySelectorAll<HTMLElement>(
