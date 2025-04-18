@@ -2,8 +2,6 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*'
 
@@ -43,23 +41,15 @@ jobs:
         id: vars
         run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-8)" >> $GITHUB_ENV
 
-      - name: Determine release tag
-        run: |
-          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          else
-            echo "RELEASE_TAG=release" >> $GITHUB_ENV
-          fi
-
       - name: Create or Update Release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          name: Release ${{ env.RELEASE_TAG }} (${{ env.SHORT_SHA }})
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }} (${{ env.SHORT_SHA }})
           draft: false
           prerelease: false
           files: |
-            chrome.zip
+            chrome.zip                                    # ★ 成果物を指定
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
