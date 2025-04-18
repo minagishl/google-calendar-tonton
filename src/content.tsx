@@ -1,6 +1,7 @@
 import type React from "react";
 import { createRoot } from "react-dom/client";
 import { useState, useEffect } from "react";
+import { Button } from "./components/Button";
 import { icsToJson } from "./utils/icsToJson";
 
 interface TimeSlot {
@@ -261,52 +262,15 @@ const ButtonContainer = (): React.ReactNode => {
         zIndex: 9999,
       }}
     >
-      <button
-        type="button"
-        onClick={handleResetUrl}
-        style={{
-          padding: "8px 16px",
-          backgroundColor: "#dc3545",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
+      <Button onClick={handleResetUrl} variant="danger">
         Reset URL
-      </button>
+      </Button>
       {hasCachedData && (
-        <button
-          type="button"
-          onClick={handleClearCache}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#ff9800",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
+        <Button onClick={handleClearCache} variant="warning">
           Clear Cache
-        </button>
+        </Button>
       )}
-      <button
-        type="button"
-        onClick={handleApplyCalendar}
-        disabled={isLoading}
-        style={{
-          padding: "8px 16px",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-        }}
-      >
+      <Button onClick={handleApplyCalendar} disabled={isLoading}>
         Apply Calendar
         {isLoading && (
           <div
@@ -320,7 +284,7 @@ const ButtonContainer = (): React.ReactNode => {
             }}
           />
         )}
-      </button>
+      </Button>
     </div>
   );
 };

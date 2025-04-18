@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { Button } from "./components/Button";
 
 function Options() {
   const [calendarUrl, setCalendarUrl] = useState<string>("");
@@ -48,20 +49,9 @@ function Options() {
           }}
         />
       </div>
-      <button
-        type="button"
-        onClick={handleSave}
-        style={{
-          padding: "8px 16px",
-          backgroundColor: "#4285f4",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
+      <Button onClick={handleSave} variant="other">
         Save
-      </button>
+      </Button>
     </div>
   );
 }
