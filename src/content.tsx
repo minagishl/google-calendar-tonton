@@ -220,6 +220,14 @@ const ButtonContainer: React.FC = () => {
       setHasCachedData(!!result.icsCache);
     })();
 
+    // Check and execute auto-apply feature
+    (async () => {
+      const result = await browser.storage.local.get("autoApplyCalendar");
+      if (result.autoApplyCalendar) {
+        handleApplyCalendar();
+      }
+    })();
+
     // Listen for cache changes
     const listener = (changes: {
       [key: string]: browser.Storage.StorageChange;

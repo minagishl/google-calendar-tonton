@@ -6,6 +6,7 @@ import browser from "webextension-polyfill";
 function Options() {
   const [calendarUrl, setCalendarUrl] = useState<string>("");
   const [autoDeclineWeekends, setAutoDeclineWeekends] = useState(false);
+  const [autoApplyCalendar, setAutoApplyCalendar] = useState(false);
 
   useEffect(() => {
     // Load saved settings
@@ -13,6 +14,7 @@ function Options() {
       const result = await browser.storage.local.get([
         "calendarUrl",
         "autoDeclineWeekends",
+        "autoApplyCalendar",
       ]);
 
       if (result.calendarUrl) {
@@ -21,6 +23,10 @@ function Options() {
 
       if (result.autoDeclineWeekends) {
         setAutoDeclineWeekends(result.autoDeclineWeekends as boolean);
+      }
+
+      if (result.autoApplyCalendar) {
+        setAutoApplyCalendar(result.autoApplyCalendar as boolean);
       }
     })();
   }, []);
@@ -38,7 +44,7 @@ function Options() {
     }
 
     await browser.storage.local
-      .set({ calendarUrl, autoDeclineWeekends })
+      .set({ calendarUrl, autoDeclineWeekends, autoApplyCalendar })
       .then(() => {
         alert("Settings have been saved");
       });
@@ -67,7 +73,7 @@ function Options() {
           }}
         />
       </div>
-      <div style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: "10px" }}>
         <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <input
             type="checkbox"
@@ -75,6 +81,16 @@ function Options() {
             onChange={(e) => setAutoDeclineWeekends(e.target.checked)}
           />
           Automatically decline events on Saturdays and Sundays
+        </label>
+      </div>
+      <div style={{ marginBottom: "20px" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <input
+            type="checkbox"
+            checked={autoApplyCalendar}
+            onChange={(e) => setAutoApplyCalendar(e.target.checked)}
+          />
+          Automatically apply calendar events
         </label>
       </div>
       <Button onClick={handleSave} variant="other">
