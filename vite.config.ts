@@ -9,6 +9,10 @@ const manifest = defineManifest({
   description: "Auto-send Tonton's schedule from Google Calendar.",
   permissions: ["storage"],
   host_permissions: ["https://calendar.google.com/*"],
+  options_ui: {
+    page: "src/options.html",
+    open_in_tab: true,
+  },
   icons: {
     "16": "src/assets/icon16.png",
     "19": "src/assets/icon19.png",
@@ -34,6 +38,7 @@ export default defineConfig({
       input: {
         content: "src/content.tsx",
         background: "src/background.ts",
+        options: "src/options.html",
       },
     },
   },
