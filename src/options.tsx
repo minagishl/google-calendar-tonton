@@ -243,9 +243,22 @@ function Options() {
           <option value="left-bottom">Left Bottom</option>
         </select>
       </div>
-      <Button onClick={handleSave} variant="other">
-        Save
-      </Button>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <Button onClick={handleSave} variant="other">
+          Save
+        </Button>
+        <div style={{ marginLeft: "auto", paddingLeft: "40px" }}>
+          Please check{" "}
+          <a
+            href="https://github.com/minagishl/google-calendar-tonton/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </a>{" "}
+          for inquiries.
+        </div>
+      </div>
     </div>
   );
 }
