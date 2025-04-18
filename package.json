@@ -30,7 +30,7 @@
     "vite": "6.3.2"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["@biomejs/biome"]
+    "onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
   },
   "dependencies": {
     "ical.js": "^2.1.0",
