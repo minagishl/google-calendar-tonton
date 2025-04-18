@@ -1,27 +1,29 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Button } from "./components/Button";
+import browser from "webextension-polyfill";
 
 function Options() {
   const [calendarUrl, setCalendarUrl] = useState<string>("");
 
   useEffect(() => {
     // Load saved settings
-    chrome.storage.local.get(["calendarUrl"], (result) => {
+    (async () => {
+      const result = await browser.storage.local.get("calendarUrl");
       if (result.calendarUrl) {
-        setCalendarUrl(result.calendarUrl);
+        setCalendarUrl(result.calendarUrl as string);
       }
-    });
+    })();
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validate the URL
     if (!calendarUrl) {
       alert("Please enter a valid Google Calendar URL.");
       return;
     }
 
-    chrome.storage.local.set({ calendarUrl }, () => {
+    await browser.storage.local.set({ calendarUrl }).then(() => {
       alert("Settings have been saved");
     });
   };

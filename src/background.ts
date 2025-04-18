@@ -1,54 +1,60 @@
-chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
-  if (request.type === "FETCH_ICS") {
-    // Try to get from cache first
-    chrome.storage.local.get(
-      ["icsCache", "icsCacheTimestamp"],
-      async (result) => {
-        const now = Date.now();
-        const cacheAge = now - (result.icsCacheTimestamp || 0);
-        const cacheValid = cacheAge < 24 * 60 * 60 * 1000; // 24 hours cache
+import browser from "webextension-polyfill";
 
-        if (cacheValid && result.icsCache) {
-          sendResponse({
-            success: true,
-            data: result.icsCache,
-            fromCache: true,
-          });
-          return;
-        }
+interface FetchIcsRequest {
+  type: "FETCH_ICS";
+  url: string;
+}
 
-        try {
-          const response = await fetch(request.url);
-          const data = await response.text();
-          // Store in cache
-          await chrome.storage.local.set({
-            icsCache: data,
-            icsCacheTimestamp: now,
-            icsUrl: request.url,
-          });
-          sendResponse({ success: true, data, fromCache: false });
-        } catch (error: unknown) {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          sendResponse({ success: false, error: errorMessage });
-        }
+interface ClearIcsCacheRequest {
+  type: "CLEAR_ICS_CACHE";
+}
+
+type Request = FetchIcsRequest | ClearIcsCacheRequest;
+
+browser.runtime.onMessage.addListener(async (request: unknown) => {
+  if (typeof request === "object" && request !== null && "type" in request) {
+    const req = request as Request;
+
+    if (req.type === "FETCH_ICS") {
+      const { icsCache, icsCacheTimestamp } = await browser.storage.local.get([
+        "icsCache",
+        "icsCacheTimestamp",
+      ]);
+      const now = Date.now();
+      const timestamp =
+        typeof icsCacheTimestamp === "number" ? icsCacheTimestamp : 0;
+      if (icsCache && now - timestamp < 24 * 60 * 60 * 1000) {
+        return { success: true, data: icsCache, fromCache: true };
       }
-    );
-    return true; // Will respond asynchronously
-  }
-
-  if (request.type === "CLEAR_ICS_CACHE") {
-    chrome.storage.local.remove(
-      ["icsCache", "icsCacheTimestamp", "icsUrl"],
-      () => {
-        sendResponse({ success: true });
+      try {
+        const response = await fetch(req.url);
+        const data = await response.text();
+        await browser.storage.local.set({
+          icsCache: data,
+          icsCacheTimestamp: now,
+          icsUrl: req.url,
+        });
+        return { success: true, data, fromCache: false };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
       }
-    );
-    return true;
+    }
+
+    if (req.type === "CLEAR_ICS_CACHE") {
+      await browser.storage.local.remove([
+        "icsCache",
+        "icsCacheTimestamp",
+        "icsUrl",
+      ]);
+      return { success: true };
+    }
   }
 });
 
 // Open the options page in a new tab when the icon is clicked
-chrome.action.onClicked.addListener(() => {
-  chrome.runtime.openOptionsPage();
+browser.action.onClicked.addListener(() => {
+  browser.runtime.openOptionsPage();
 });
