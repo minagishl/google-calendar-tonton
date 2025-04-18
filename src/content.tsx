@@ -55,8 +55,6 @@ const applyCalendarEvents = async (): Promise<void> => {
   const workEndTime = endTime || "17:00";
   const shouldEnforceWorkingHours = enforceWorkingHours || false;
 
-  console.log(calendarUrl, autoDeclineWeekends);
-
   // Check if calendar URL is set
   if (!calendarUrl) {
     const url = prompt("Please enter your Google Calendar ICS URL:");
