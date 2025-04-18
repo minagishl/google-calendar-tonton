@@ -43,6 +43,7 @@ const manifest = defineManifest({
 export default defineConfig({
   plugins: [react(), crx({ manifest })],
   build: {
+    minify: "terser",
     rollupOptions: {
       input: {
         content: "src/content.tsx",
