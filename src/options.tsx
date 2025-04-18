@@ -106,7 +106,7 @@ function Options() {
           value={calendarUrl}
           onChange={(e) => setCalendarUrl(e.target.value)}
           style={{
-            width: "100%",
+            width: "calc(100% - 16px)",
             padding: "8px",
             borderRadius: "4px",
             border: "1px solid #ccc",
