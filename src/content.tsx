@@ -2,6 +2,7 @@ import type React from "react";
 import { createRoot } from "react-dom/client";
 import { useState, useEffect } from "react";
 import { Button } from "./components/Button";
+import { Calendar, X, RotateCcw } from "lucide-react";
 import { icsToJson } from "./utils/icsToJson";
 import browser from "webextension-polyfill";
 
@@ -240,12 +241,16 @@ const ButtonContainer: React.FC = () => {
   const [buttonPosition, setButtonPosition] = useState<
     "right-top" | "right-bottom" | "left-top" | "left-bottom"
   >("right-top");
+  const [minimalMode, setMinimalMode] = useState(false);
 
   // Load settings and check cache on mount
   useEffect(() => {
     (async () => {
-      // Load button position setting
-      const settings = await browser.storage.local.get("buttonPosition");
+      // Load settings
+      const settings = await browser.storage.local.get([
+        "buttonPosition",
+        "minimalMode",
+      ]);
       if (settings.buttonPosition) {
         setButtonPosition(
           settings.buttonPosition as
@@ -254,6 +259,10 @@ const ButtonContainer: React.FC = () => {
             | "left-top"
             | "left-bottom"
         );
+      }
+
+      if (settings.minimalMode !== undefined) {
+        setMinimalMode(settings.minimalMode as boolean);
       }
 
       const result = await browser.storage.local.get("icsCache");
@@ -336,15 +345,30 @@ const ButtonContainer: React.FC = () => {
         zIndex: 9999,
       }}
     >
-      <Button onClick={handleResetUrl} variant="danger">
+      <Button
+        onClick={handleResetUrl}
+        variant="danger"
+        minimize={minimalMode}
+        icon={<X size={18} />}
+      >
         Reset URL
       </Button>
       {hasCachedData && (
-        <Button onClick={handleClearCache} variant="warning">
+        <Button
+          onClick={handleClearCache}
+          variant="warning"
+          minimize={minimalMode}
+          icon={<RotateCcw size={18} />}
+        >
           Clear Cache
         </Button>
       )}
-      <Button onClick={handleApplyCalendar} disabled={isLoading}>
+      <Button
+        onClick={handleApplyCalendar}
+        disabled={isLoading}
+        minimize={minimalMode}
+        icon={<Calendar size={18} />}
+      >
         Apply Calendar
         {isLoading && (
           <div

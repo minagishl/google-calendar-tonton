@@ -13,6 +13,7 @@ function Options() {
   const [buttonPosition, setButtonPosition] = useState<
     "right-top" | "right-bottom" | "left-top" | "left-bottom"
   >("right-top");
+  const [minimalMode, setMinimalMode] = useState(false);
 
   useEffect(() => {
     // Load saved settings
@@ -25,6 +26,7 @@ function Options() {
         "endTime",
         "enforceWorkingHours",
         "buttonPosition",
+        "minimalMode",
       ]);
 
       if (result.calendarUrl) {
@@ -60,6 +62,10 @@ function Options() {
             | "left-bottom"
         );
       }
+
+      if (result.minimalMode !== undefined) {
+        setMinimalMode(result.minimalMode as boolean);
+      }
     })();
   }, []);
 
@@ -84,6 +90,7 @@ function Options() {
         endTime,
         enforceWorkingHours,
         buttonPosition,
+        minimalMode,
       })
       .then(() => {
         alert("Settings have been saved");
@@ -242,6 +249,16 @@ function Options() {
           <option value="left-top">Left Top</option>
           <option value="left-bottom">Left Bottom</option>
         </select>
+      </div>
+      <div style={{ marginBottom: "20px" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <input
+            type="checkbox"
+            checked={minimalMode}
+            onChange={(e) => setMinimalMode(e.target.checked)}
+          />
+          Use minimal button mode (icon only)
+        </label>
       </div>
       <div style={{ display: "flex", alignItems: "center" }}>
         <Button onClick={handleSave} variant="other">

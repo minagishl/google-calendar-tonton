@@ -5,6 +5,8 @@ interface ButtonProps {
   disabled?: boolean;
   variant?: "primary" | "danger" | "warning" | "other";
   children: ReactNode;
+  minimize?: boolean;
+  icon?: ReactNode;
 }
 
 const getBackgroundColor = (variant: ButtonProps["variant"]) => {
@@ -25,6 +27,8 @@ export const Button = ({
   disabled = false,
   variant = "primary",
   children,
+  minimize = false,
+  icon,
 }: ButtonProps) => {
   return (
     <button
@@ -32,7 +36,7 @@ export const Button = ({
       onClick={onClick}
       disabled={disabled}
       style={{
-        padding: "8px 16px",
+        padding: minimize ? "8px" : "8px 16px",
         backgroundColor: getBackgroundColor(variant),
         color: "white",
         border: "none",
@@ -40,11 +44,14 @@ export const Button = ({
         cursor: disabled ? "not-allowed" : "pointer",
         display: "flex",
         alignItems: "center",
-        gap: "8px",
+        justifyContent: "center",
+        gap: minimize ? "0" : "8px",
         opacity: disabled ? 0.7 : 1,
+        width: minimize ? "36px" : "auto",
+        height: minimize ? "36px" : "auto",
       }}
     >
-      {children}
+      {minimize ? icon : children}
     </button>
   );
 };
