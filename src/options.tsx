@@ -5,13 +5,22 @@ import browser from "webextension-polyfill";
 
 function Options() {
   const [calendarUrl, setCalendarUrl] = useState<string>("");
+  const [autoDeclineWeekends, setAutoDeclineWeekends] = useState(false);
 
   useEffect(() => {
     // Load saved settings
     (async () => {
-      const result = await browser.storage.local.get("calendarUrl");
+      const result = await browser.storage.local.get([
+        "calendarUrl",
+        "autoDeclineWeekends",
+      ]);
+
       if (result.calendarUrl) {
         setCalendarUrl(result.calendarUrl as string);
+      }
+
+      if (result.autoDeclineWeekends) {
+        setAutoDeclineWeekends(result.autoDeclineWeekends as boolean);
       }
     })();
   }, []);
@@ -28,9 +37,11 @@ function Options() {
       return;
     }
 
-    await browser.storage.local.set({ calendarUrl }).then(() => {
-      alert("Settings have been saved");
-    });
+    await browser.storage.local
+      .set({ calendarUrl, autoDeclineWeekends })
+      .then(() => {
+        alert("Settings have been saved");
+      });
   };
 
   return (
@@ -55,6 +66,16 @@ function Options() {
             border: "1px solid #ccc",
           }}
         />
+      </div>
+      <div style={{ marginBottom: "20px" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <input
+            type="checkbox"
+            checked={autoDeclineWeekends}
+            onChange={(e) => setAutoDeclineWeekends(e.target.checked)}
+          />
+          Automatically decline events on Saturdays and Sundays
+        </label>
       </div>
       <Button onClick={handleSave} variant="other">
         Save

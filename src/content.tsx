@@ -26,23 +26,26 @@ const isTimeInRange = (
 };
 
 const applyCalendarEvents = async (): Promise<void> => {
-  // Check if cache exists
-  const cache = await browser.storage.local.get("icsCache");
-  if (!cache.icsCache) {
-    const calendarUrl = await browser.storage.local.get("calendarUrl");
-    if (!calendarUrl || !calendarUrl.calendarUrl) {
-      const url = prompt("Please enter your Google Calendar ICS URL:");
-      if (url) {
-        await browser.storage.local.set({ calendarUrl: url });
-        await applyCalendarEvents();
-      }
-      console.log("Calendar URL not set!");
-      return;
-    }
+  // Get saved settings
+  interface StorageData {
+    icsCache?: string;
+    calendarUrl?: string;
+    autoDeclineWeekends?: boolean;
   }
 
-  const calendarUrl = await browser.storage.local.get("calendarUrl");
-  if (!calendarUrl || !calendarUrl.calendarUrl) {
+  const { calendarUrl, autoDeclineWeekends } = (await browser.storage.local.get(
+    ["calendarUrl", "autoDeclineWeekends"]
+  )) as StorageData;
+
+  console.log(calendarUrl, autoDeclineWeekends);
+
+  // Check if calendar URL is set
+  if (!calendarUrl) {
+    const url = prompt("Please enter your Google Calendar ICS URL:");
+    if (url) {
+      await browser.storage.local.set({ calendarUrl: url });
+      await applyCalendarEvents();
+    }
     console.log("Calendar URL not set!");
     return;
   }
@@ -72,9 +75,24 @@ const applyCalendarEvents = async (): Promise<void> => {
       const formattedTime = `${hour}:${minute}`;
 
       if (isEnabled) {
-        availableSlots.push({
-          time: formattedTime,
-        });
+        availableSlots.push({ time: formattedTime });
+      }
+    }
+
+    // Auto decline weekends if enabled (moved after collecting slots)
+    if (autoDeclineWeekends) {
+      // Use JST (UTC+9) for day of week calculation
+      const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+      const dayOfWeek = jstDate.getDay();
+      // If it's Saturday (6) or Sunday (0)
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        for (const slot of availableSlots) {
+          markBusyTimeSlots(
+            new Date(`${jstDate.toISOString().split("T")[0]}T${slot.time}`)
+          );
+        }
+        // Skip further scheduling for weekends
+        continue;
       }
     }
 
@@ -86,7 +104,7 @@ const applyCalendarEvents = async (): Promise<void> => {
   try {
     const response = (await browser.runtime.sendMessage({
       type: "FETCH_ICS",
-      url: calendarUrl.calendarUrl,
+      url: calendarUrl,
     })) as { success: boolean; error?: string; data?: string };
 
     if (!response.success) throw new Error(response.error);
