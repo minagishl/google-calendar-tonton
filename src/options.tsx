@@ -16,6 +16,47 @@ function Options() {
   const [minimalMode, setMinimalMode] = useState(false);
 
   useEffect(() => {
+    // Listen for changes in storage
+    const handleStorageChange = (
+      changes: { [key: string]: browser.Storage.StorageChange },
+      areaName: string
+    ) => {
+      if (areaName !== "local") return;
+
+      if (changes.calendarUrl) {
+        setCalendarUrl((changes.calendarUrl.newValue as string) || "");
+      }
+      if (changes.autoDeclineWeekends) {
+        setAutoDeclineWeekends(changes.autoDeclineWeekends.newValue as boolean);
+      }
+      if (changes.autoApplyCalendar) {
+        setAutoApplyCalendar(changes.autoApplyCalendar.newValue as boolean);
+      }
+      if (changes.startTime) {
+        setStartTime(changes.startTime.newValue as string);
+      }
+      if (changes.endTime) {
+        setEndTime(changes.endTime.newValue as string);
+      }
+      if (changes.enforceWorkingHours) {
+        setEnforceWorkingHours(changes.enforceWorkingHours.newValue as boolean);
+      }
+      if (changes.buttonPosition) {
+        setButtonPosition(
+          changes.buttonPosition.newValue as
+            | "right-top"
+            | "right-bottom"
+            | "left-top"
+            | "left-bottom"
+        );
+      }
+      if (changes.minimalMode !== undefined) {
+        setMinimalMode(changes.minimalMode.newValue as boolean);
+      }
+    };
+
+    browser.storage.onChanged.addListener(handleStorageChange);
+
     // Load saved settings
     (async () => {
       const result = await browser.storage.local.get([
@@ -67,6 +108,9 @@ function Options() {
         setMinimalMode(result.minimalMode as boolean);
       }
     })();
+    return () => {
+      browser.storage.onChanged.removeListener(handleStorageChange);
+    };
   }, []);
 
   const handleSave = async () => {
