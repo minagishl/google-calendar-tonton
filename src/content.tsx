@@ -79,23 +79,6 @@ const applyCalendarEvents = async (): Promise<void> => {
       }
     }
 
-    // Auto decline weekends if enabled (moved after collecting slots)
-    if (autoDeclineWeekends) {
-      // Use JST (UTC+9) for day of week calculation
-      const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-      const dayOfWeek = jstDate.getDay();
-      // If it's Saturday (6) or Sunday (0)
-      if (dayOfWeek === 0 || dayOfWeek === 6) {
-        for (const slot of availableSlots) {
-          markBusyTimeSlots(
-            new Date(`${jstDate.toISOString().split("T")[0]}T${slot.time}`)
-          );
-        }
-        // Skip further scheduling for weekends
-        continue;
-      }
-    }
-
     const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
     const jstDateString = jstDate.toISOString().split("T")[0];
     result.push({ date: jstDateString, availableSlots });
@@ -112,8 +95,23 @@ const applyCalendarEvents = async (): Promise<void> => {
 
     const icsEvents = icsToJson(response.data);
 
-    // Find non-overlapping slots
+    // Process each schedule
     for (const schedule of result) {
+      // Check for weekends if autoDeclineWeekends is enabled
+      if (autoDeclineWeekends) {
+        const scheduleDate = new Date(schedule.date);
+        const dayOfWeek = scheduleDate.getDay();
+        // If it's Saturday (6) or Sunday (0)
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          // Mark all slots as busy for weekends
+          for (const slot of schedule.availableSlots) {
+            markBusyTimeSlots(new Date(`${schedule.date}T${slot.time}`));
+          }
+          continue; // Skip calendar processing for weekend days
+        }
+      }
+
+      // Process calendar events
       const dateEvents = icsEvents.filter(
         (event) =>
           new Date(event.startDate).toISOString().split("T")[0] ===
