@@ -40,7 +40,7 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: web-build
+          name: chrome
           path: chrome.zip
           retention-days: 7
 
