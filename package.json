@@ -30,7 +30,7 @@
     "@vitejs/plugin-react": "^4.4.0",
     "terser": "^5.39.0",
     "typescript": "5.8.3",
-    "vite": "6.3.1"
+    "vite": "6.3.2"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "ical.js": "^2.1.0",
-    "lucide-react": "^0.500.0",
+    "lucide-react": "^0.501.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "webextension-polyfill": "^0.12.0"
