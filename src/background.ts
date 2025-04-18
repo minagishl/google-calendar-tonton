@@ -47,3 +47,8 @@ chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
     return true;
   }
 });
+
+// Open the options page in a new tab when the icon is clicked
+chrome.action.onClicked.addListener(() => {
+  chrome.runtime.openOptionsPage();
+});
