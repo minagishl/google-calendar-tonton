@@ -31,11 +31,28 @@ const applyCalendarEvents = async (): Promise<void> => {
     icsCache?: string;
     calendarUrl?: string;
     autoDeclineWeekends?: boolean;
+    startTime?: string;
+    endTime?: string;
+    enforceWorkingHours?: boolean;
   }
 
-  const { calendarUrl, autoDeclineWeekends } = (await browser.storage.local.get(
-    ["calendarUrl", "autoDeclineWeekends"]
-  )) as StorageData;
+  const {
+    calendarUrl,
+    autoDeclineWeekends,
+    startTime,
+    endTime,
+    enforceWorkingHours,
+  } = (await browser.storage.local.get([
+    "calendarUrl",
+    "autoDeclineWeekends",
+    "startTime",
+    "endTime",
+    "enforceWorkingHours",
+  ])) as StorageData;
+
+  const workStartTime = startTime || "09:00";
+  const workEndTime = endTime || "17:00";
+  const shouldEnforceWorkingHours = enforceWorkingHours || false;
 
   console.log(calendarUrl, autoDeclineWeekends);
 
@@ -97,18 +114,28 @@ const applyCalendarEvents = async (): Promise<void> => {
 
     // Process each schedule
     for (const schedule of result) {
-      // Check for weekends if autoDeclineWeekends is enabled
-      if (autoDeclineWeekends) {
-        const scheduleDate = new Date(schedule.date);
-        const dayOfWeek = scheduleDate.getDay();
-        // If it's Saturday (6) or Sunday (0)
-        if (dayOfWeek === 0 || dayOfWeek === 6) {
-          // Mark all slots as busy for weekends
-          for (const slot of schedule.availableSlots) {
-            markBusyTimeSlots(new Date(`${schedule.date}T${slot.time}`));
-          }
-          continue; // Skip calendar processing for weekend days
+      const scheduleDate = new Date(schedule.date);
+      const dayOfWeek = scheduleDate.getDay();
+
+      for (const slot of schedule.availableSlots) {
+        const [hours, minutes] = slot.time.split(":").map(Number);
+        const slotTime = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+
+        const shouldMarkBusy =
+          // Weekend check
+          (autoDeclineWeekends && (dayOfWeek === 0 || dayOfWeek === 6)) ||
+          // Working hours check (only if enforced)
+          (shouldEnforceWorkingHours &&
+            (slotTime < workStartTime || slotTime >= workEndTime));
+
+        if (shouldMarkBusy) {
+          markBusyTimeSlots(new Date(`${schedule.date}T${slot.time}`));
         }
+      }
+
+      // If it's a weekend and autoDeclineWeekends is enabled, skip calendar processing
+      if (autoDeclineWeekends && (dayOfWeek === 0 || dayOfWeek === 6)) {
+        continue;
       }
 
       // Process calendar events

@@ -7,6 +7,9 @@ function Options() {
   const [calendarUrl, setCalendarUrl] = useState<string>("");
   const [autoDeclineWeekends, setAutoDeclineWeekends] = useState(false);
   const [autoApplyCalendar, setAutoApplyCalendar] = useState(false);
+  const [startTime, setStartTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("17:00");
+  const [enforceWorkingHours, setEnforceWorkingHours] = useState(false);
 
   useEffect(() => {
     // Load saved settings
@@ -15,6 +18,9 @@ function Options() {
         "calendarUrl",
         "autoDeclineWeekends",
         "autoApplyCalendar",
+        "startTime",
+        "endTime",
+        "enforceWorkingHours",
       ]);
 
       if (result.calendarUrl) {
@@ -27,6 +33,18 @@ function Options() {
 
       if (result.autoApplyCalendar) {
         setAutoApplyCalendar(result.autoApplyCalendar as boolean);
+      }
+
+      if (result.startTime) {
+        setStartTime(result.startTime as string);
+      }
+
+      if (result.endTime) {
+        setEndTime(result.endTime as string);
+      }
+
+      if (result.enforceWorkingHours) {
+        setEnforceWorkingHours(result.enforceWorkingHours as boolean);
       }
     })();
   }, []);
@@ -44,7 +62,14 @@ function Options() {
     }
 
     await browser.storage.local
-      .set({ calendarUrl, autoDeclineWeekends, autoApplyCalendar })
+      .set({
+        calendarUrl,
+        autoDeclineWeekends,
+        autoApplyCalendar,
+        startTime,
+        endTime,
+        enforceWorkingHours,
+      })
       .then(() => {
         alert("Settings have been saved");
       });
@@ -92,6 +117,76 @@ function Options() {
           />
           Automatically apply calendar events
         </label>
+      </div>
+      <div style={{ marginBottom: "20px" }}>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            marginBottom: "10px",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={enforceWorkingHours}
+            onChange={(e) => setEnforceWorkingHours(e.target.checked)}
+          />
+          Enforce working hours
+        </label>
+        <div
+          style={{
+            display: "block",
+            marginBottom: "8px",
+            opacity: enforceWorkingHours ? 1 : 0.5,
+          }}
+        >
+          <span>Working Hours:</span>
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              alignItems: "center",
+              marginTop: "8px",
+            }}
+          >
+            <label
+              htmlFor="startTime"
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            >
+              <input
+                id="startTime"
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                disabled={!enforceWorkingHours}
+                style={{
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                }}
+              />
+            </label>
+            <span>to</span>
+            <label
+              htmlFor="endTime"
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            >
+              <input
+                id="endTime"
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                disabled={!enforceWorkingHours}
+                style={{
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                }}
+              />
+            </label>
+          </div>
+        </div>
       </div>
       <Button onClick={handleSave} variant="other">
         Save
