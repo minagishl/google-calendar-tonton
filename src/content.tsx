@@ -273,6 +273,15 @@ const ButtonContainer: React.FC = () => {
       [key: string]: browser.Storage.StorageChange;
     }) => {
       if (changes.icsCache) setHasCachedData(!!changes.icsCache.newValue);
+      if (changes.buttonPosition) {
+        setButtonPosition(
+          changes.buttonPosition.newValue as
+            | "right-top"
+            | "right-bottom"
+            | "left-top"
+            | "left-bottom"
+        );
+      }
     };
 
     browser.storage.onChanged.addListener(listener);
