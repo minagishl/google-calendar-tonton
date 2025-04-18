@@ -2,7 +2,10 @@ name: Release
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+    tags:
+      - 'v*'
 
 jobs:
   build-and-release:
@@ -10,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -39,12 +43,20 @@ jobs:
         id: vars
         run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-8)" >> $GITHUB_ENV
 
-      - name: Create Release
+      - name: Determine release tag
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          else
+            echo "RELEASE_TAG=release" >> $GITHUB_ENV
+          fi
+
+      - name: Create or Update Release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: release
-          name: Release ${{ env.SHORT_SHA }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Release ${{ env.RELEASE_TAG }} (${{ env.SHORT_SHA }})
           draft: false
           prerelease: false
           files: |
