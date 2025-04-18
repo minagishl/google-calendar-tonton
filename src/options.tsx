@@ -23,6 +23,11 @@ function Options() {
       return;
     }
 
+    if (URL.canParse(calendarUrl) !== true) {
+      alert("Please enter a valid URL.");
+      return;
+    }
+
     await browser.storage.local.set({ calendarUrl }).then(() => {
       alert("Settings have been saved");
     });
