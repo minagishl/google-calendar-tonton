@@ -30,7 +30,7 @@ const applyCalendarEvents = async (): Promise<void> => {
   // Get saved settings
   interface StorageData {
     icsCache?: string;
-    calendarUrl?: string;
+    calendarUrls?: string[];
     autoDeclineWeekends?: boolean;
     startTime?: string;
     endTime?: string;
@@ -38,13 +38,13 @@ const applyCalendarEvents = async (): Promise<void> => {
   }
 
   const {
-    calendarUrl,
+    calendarUrls = [""],
     autoDeclineWeekends,
     startTime,
     endTime,
     enforceWorkingHours,
   } = (await browser.storage.local.get([
-    "calendarUrl",
+    "calendarUrls",
     "autoDeclineWeekends",
     "startTime",
     "endTime",
@@ -55,14 +55,14 @@ const applyCalendarEvents = async (): Promise<void> => {
   const workEndTime = endTime || "17:00";
   const shouldEnforceWorkingHours = enforceWorkingHours || false;
 
-  // Check if calendar URL is set
-  if (!calendarUrl) {
+  // Check if calendar URLs are set
+  if (!calendarUrls.length || (calendarUrls.length === 1 && !calendarUrls[0])) {
     const url = prompt("Please enter your Google Calendar ICS URL:");
     if (url) {
-      await browser.storage.local.set({ calendarUrl: url });
+      await browser.storage.local.set({ calendarUrls: [url] });
       await applyCalendarEvents();
     }
-    console.log("Calendar URL not set!");
+    console.log("Calendar URLs not set!");
     return;
   }
 
@@ -101,15 +101,38 @@ const applyCalendarEvents = async (): Promise<void> => {
   }
 
   try {
-    const response = (await browser.runtime.sendMessage({
-      type: "FETCH_ICS",
-      url: calendarUrl,
-    })) as { success: boolean; error?: string; data?: string };
+    // Fetch all calendar data in parallel
+    const fetchPromises = calendarUrls
+      .filter((url) => url.trim())
+      .map(async (url) => {
+        try {
+          const response = (await browser.runtime.sendMessage({
+            type: "FETCH_ICS",
+            url,
+          })) as { success: boolean; error?: string; data?: string };
 
-    if (!response.success) throw new Error(response.error);
-    if (!response.data) throw new Error("No ICS data received.");
+          if (!response.success || !response.data) {
+            console.error(
+              `Error fetching calendar ${url}:`,
+              response.error || "No data received"
+            );
+            return [];
+          }
 
-    const icsEvents = icsToJson(response.data);
+          return icsToJson(response.data);
+        } catch (error) {
+          console.error(`Failed to process calendar ${url}:`, error);
+          return [];
+        }
+      });
+
+    // Wait for all fetches to complete
+    const eventsArrays = await Promise.all(fetchPromises);
+    const events = eventsArrays.flat();
+
+    if (events.length === 0) {
+      console.warn("No calendar events found from any source");
+    }
 
     // Process each schedule
     for (const schedule of result) {
@@ -137,12 +160,11 @@ const applyCalendarEvents = async (): Promise<void> => {
         continue;
       }
 
-      // Process calendar events
-      const dateEvents = icsEvents.filter(
-        (event) =>
-          new Date(event.startDate).toISOString().split("T")[0] ===
-          schedule.date
-      );
+      // Process calendar events more efficiently
+      const dateEvents = events.filter((event) => {
+        const eventDate = new Date(event.startDate).toISOString().split("T")[0];
+        return eventDate === schedule.date;
+      });
       const busyTimeSlots = schedule.availableSlots.filter((slot) => {
         const [hours, minutes] = slot.time.split(":").map(Number);
         const slotDate = new Date(schedule.date);
@@ -265,8 +287,8 @@ const ButtonContainer: React.FC = () => {
         setMinimalMode(settings.minimalMode as boolean);
       }
 
-      const result = await browser.storage.local.get("icsCache");
-      setHasCachedData(!!result.icsCache);
+      const { icsCache } = await browser.storage.local.get("icsCache");
+      setHasCachedData(!!icsCache && Object.keys(icsCache || {}).length > 0);
     })();
 
     // Check and execute auto-apply feature
@@ -281,7 +303,10 @@ const ButtonContainer: React.FC = () => {
     const listener = (changes: {
       [key: string]: browser.Storage.StorageChange;
     }) => {
-      if (changes.icsCache) setHasCachedData(!!changes.icsCache.newValue);
+      if (changes.icsCache) {
+        const newCache = changes.icsCache.newValue;
+        setHasCachedData(!!newCache && Object.keys(newCache || {}).length > 0);
+      }
       if (changes.buttonPosition) {
         setButtonPosition(
           changes.buttonPosition.newValue as
@@ -319,13 +344,12 @@ const ButtonContainer: React.FC = () => {
   };
 
   const handleResetUrl = () => {
-    if (window.confirm("Are you sure you want to reset the calendar URL?")) {
-      browser.storage.local.remove("icsCache");
-      browser.storage.local.remove("icsCacheTimestamp");
-      browser.storage.local.remove("icsUrl");
-      browser.storage.local.remove("calendarUrl").then(() => {
-        alert("Calendar URL has been reset.");
-      });
+    if (window.confirm("Are you sure you want to reset all calendar URLs?")) {
+      browser.storage.local
+        .remove(["icsCache", "icsCacheTimestamp", "icsUrl", "calendarUrls"])
+        .then(() => {
+          alert("Calendar URLs have been reset.");
+        });
     }
   };
 

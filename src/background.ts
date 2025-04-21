@@ -1,5 +1,12 @@
 import browser from "webextension-polyfill";
 
+interface IcsCache {
+  [url: string]: {
+    data: string;
+    timestamp: number;
+  };
+}
+
 interface FetchIcsRequest {
   type: "FETCH_ICS";
   url: string;
@@ -16,24 +23,29 @@ browser.runtime.onMessage.addListener(async (request: unknown) => {
     const req = request as Request;
 
     if (req.type === "FETCH_ICS") {
-      const { icsCache, icsCacheTimestamp } = await browser.storage.local.get([
-        "icsCache",
-        "icsCacheTimestamp",
-      ]);
+      const { icsCache } = await browser.storage.local.get("icsCache");
+      const cache = (icsCache || {}) as IcsCache;
       const now = Date.now();
-      const timestamp =
-        typeof icsCacheTimestamp === "number" ? icsCacheTimestamp : 0;
-      if (icsCache && now - timestamp < 24 * 60 * 60 * 1000) {
-        return { success: true, data: icsCache, fromCache: true };
+      const urlCache = cache[req.url];
+
+      if (urlCache && now - urlCache.timestamp < 24 * 60 * 60 * 1000) {
+        return { success: true, data: urlCache.data, fromCache: true };
       }
+
       try {
         const response = await fetch(req.url);
         const data = await response.text();
+
         await browser.storage.local.set({
-          icsCache: data,
-          icsCacheTimestamp: now,
-          icsUrl: req.url,
+          icsCache: {
+            ...cache,
+            [req.url]: {
+              data,
+              timestamp: now,
+            },
+          },
         });
+
         return { success: true, data, fromCache: false };
       } catch (error) {
         return {
@@ -44,11 +56,7 @@ browser.runtime.onMessage.addListener(async (request: unknown) => {
     }
 
     if (req.type === "CLEAR_ICS_CACHE") {
-      await browser.storage.local.remove([
-        "icsCache",
-        "icsCacheTimestamp",
-        "icsUrl",
-      ]);
+      await browser.storage.local.remove("icsCache");
       return { success: true };
     }
   }

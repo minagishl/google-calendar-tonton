@@ -4,7 +4,7 @@ import { Button } from "./components/Button";
 import browser from "webextension-polyfill";
 
 function Options() {
-  const [calendarUrl, setCalendarUrl] = useState<string>("");
+  const [calendarUrls, setCalendarUrls] = useState<string[]>([""]);
   const [autoDeclineWeekends, setAutoDeclineWeekends] = useState(false);
   const [autoApplyCalendar, setAutoApplyCalendar] = useState(false);
   const [startTime, setStartTime] = useState("09:00");
@@ -23,8 +23,8 @@ function Options() {
     ) => {
       if (areaName !== "local") return;
 
-      if (changes.calendarUrl) {
-        setCalendarUrl((changes.calendarUrl.newValue as string) || "");
+      if (changes.calendarUrls) {
+        setCalendarUrls((changes.calendarUrls.newValue as string[]) || [""]);
       }
       if (changes.autoDeclineWeekends) {
         setAutoDeclineWeekends(changes.autoDeclineWeekends.newValue as boolean);
@@ -60,7 +60,7 @@ function Options() {
     // Load saved settings
     (async () => {
       const result = await browser.storage.local.get([
-        "calendarUrl",
+        "calendarUrls",
         "autoDeclineWeekends",
         "autoApplyCalendar",
         "startTime",
@@ -70,8 +70,8 @@ function Options() {
         "minimalMode",
       ]);
 
-      if (result.calendarUrl) {
-        setCalendarUrl(result.calendarUrl as string);
+      if (result.calendarUrls) {
+        setCalendarUrls(result.calendarUrls as string[]);
       }
 
       if (result.autoDeclineWeekends) {
@@ -114,20 +114,25 @@ function Options() {
   }, []);
 
   const handleSave = async () => {
-    // Validate the URL
-    if (!calendarUrl) {
-      alert("Please enter a valid Google Calendar URL.");
+    // Validate URLs and remove empty ones
+    const validUrls = calendarUrls.filter((url) => url.trim() !== "");
+
+    if (validUrls.length === 0) {
+      alert("Please enter at least one valid Google Calendar URL.");
       return;
     }
 
-    if (URL.canParse(calendarUrl) !== true) {
-      alert("Please enter a valid URL.");
-      return;
+    // Validate all URLs
+    for (const url of validUrls) {
+      if (URL.canParse(url) !== true) {
+        alert(`Invalid URL: ${url}`);
+        return;
+      }
     }
 
     await browser.storage.local
       .set({
-        calendarUrl,
+        calendarUrls: validUrls,
         autoDeclineWeekends,
         autoApplyCalendar,
         startTime,
@@ -146,25 +151,67 @@ function Options() {
       <h1>Google Calendar Tonton - Settings</h1>
       <div style={{ marginBottom: "20px" }}>
         <label
-          htmlFor="calendarUrl"
+          htmlFor="calendar-urls"
           style={{ display: "block", marginBottom: "8px" }}
         >
-          Google Calendar URL
+          Google Calendar URLs
         </label>
-        <input
-          type="text"
-          id="calendarUrl"
-          value={calendarUrl}
-          onChange={(e) => setCalendarUrl(e.target.value)}
+        {calendarUrls.map((url, index) => (
+          <div
+            key={`calendar-url-${url}`}
+            style={{ display: "flex", gap: "8px", marginBottom: "8px" }}
+          >
+            <input
+              id={index === 0 ? "calendar-urls" : undefined}
+              type="text"
+              value={url}
+              onChange={(e) => {
+                const newUrls = [...calendarUrls];
+                newUrls[index] = e.target.value;
+                setCalendarUrls(newUrls);
+              }}
+              style={{
+                flex: 1,
+                height: "32px",
+                padding: "0 8px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+                boxSizing: "border-box",
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const newUrls = calendarUrls.filter((_, i) => i !== index);
+                if (newUrls.length === 0) newUrls.push(""); // Keep at least one
+                setCalendarUrls(newUrls);
+              }}
+              style={{
+                padding: "8px 16px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+                background: "#fff",
+                cursor: "pointer",
+              }}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => setCalendarUrls([...calendarUrls, ""])}
           style={{
-            width: "100%",
-            height: "32px",
-            padding: "0 8px",
+            marginTop: "8px",
+            padding: "8px 16px",
             borderRadius: "4px",
             border: "1px solid #ccc",
-            boxSizing: "border-box",
+            background: "#fff",
+            cursor: "pointer",
           }}
-        />
+        >
+          Add another calendar URL
+        </button>
       </div>
       <div style={{ marginBottom: "10px" }}>
         <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
