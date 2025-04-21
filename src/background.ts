@@ -18,41 +18,45 @@ interface ClearIcsCacheRequest {
 
 type Request = FetchIcsRequest | ClearIcsCacheRequest;
 
+async function handleIcsFetch(url: string) {
+  const { icsCache } = await browser.storage.local.get("icsCache");
+  const cache = (icsCache || {}) as IcsCache;
+  const now = Date.now();
+  const urlCache = cache[url];
+
+  if (urlCache && now - urlCache.timestamp < 24 * 60 * 60 * 1000) {
+    return { success: true, data: urlCache.data, fromCache: true };
+  }
+
+  try {
+    const response = await fetch(url);
+    const data = await response.text();
+
+    await browser.storage.local.set({
+      icsCache: {
+        ...cache,
+        [url]: {
+          data,
+          timestamp: now,
+        },
+      },
+    });
+
+    return { success: true, data, fromCache: false };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
 browser.runtime.onMessage.addListener(async (request: unknown) => {
   if (typeof request === "object" && request !== null && "type" in request) {
     const req = request as Request;
 
     if (req.type === "FETCH_ICS") {
-      const { icsCache } = await browser.storage.local.get("icsCache");
-      const cache = (icsCache || {}) as IcsCache;
-      const now = Date.now();
-      const urlCache = cache[req.url];
-
-      if (urlCache && now - urlCache.timestamp < 24 * 60 * 60 * 1000) {
-        return { success: true, data: urlCache.data, fromCache: true };
-      }
-
-      try {
-        const response = await fetch(req.url);
-        const data = await response.text();
-
-        await browser.storage.local.set({
-          icsCache: {
-            ...cache,
-            [req.url]: {
-              data,
-              timestamp: now,
-            },
-          },
-        });
-
-        return { success: true, data, fromCache: false };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : String(error),
-        };
-      }
+      return handleIcsFetch(req.url);
     }
 
     if (req.type === "CLEAR_ICS_CACHE") {
