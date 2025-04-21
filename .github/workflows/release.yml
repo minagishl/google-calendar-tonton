@@ -45,7 +45,7 @@ jobs:
           name: ${{ github.ref_name }}
           draft: false
           prerelease: false
-          files: |
-            chrome.zip
+          files:
+            - chrome.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
