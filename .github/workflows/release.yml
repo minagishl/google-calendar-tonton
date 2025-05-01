@@ -33,6 +33,7 @@ jobs:
 
       - name: Create Chrome zip
         run: |
+          cp LICENSE README.md dist/
           cd dist
           zip -r ../chrome.zip .
           cd ..
