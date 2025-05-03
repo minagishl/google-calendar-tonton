@@ -35,7 +35,11 @@ pnpm dev
 pnpm build
 ```
 
-## Installation
+## Chrome Web Store
+
+You can install this extension from the [Chrome Web Store](https://chromewebstore.google.com/detail/lfgjlkfemoaaindkcgdncghkomgmmemi).
+
+## Manual Installation
 
 1. Run `pnpm build` to create the production build
 2. Open `chrome://extensions` in Chrome browser
