@@ -12,8 +12,8 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       lucide-react:
-        specifier: ^0.503.0
-        version: 0.503.0(react@19.1.0)
+        specifier: ^0.507.0
+        version: 0.507.0(react@19.1.0)
       react:
         specifier: ^19.1.0
         version: 19.1.0
@@ -31,8 +31,8 @@ importers:
         specifier: 2.0.0-beta.32
         version: 2.0.0-beta.32
       '@types/chrome':
-        specifier: 0.0.317
-        version: 0.0.317
+        specifier: 0.0.318
+        version: 0.0.318
       '@types/react':
         specifier: ^19.1.2
         version: 19.1.2
@@ -495,8 +495,8 @@ packages:
   '@types/babel__traverse@7.20.7':
     resolution: {integrity: sha512-dkO5fhS7+/oos4ciWxyEyjWe48zmG6wbCheo/G2ZnHx4fs3EU6YC6UM8rk56gAjNJ9P3MTH2jo5jb92/K6wbng==}
 
-  '@types/chrome@0.0.317':
-    resolution: {integrity: sha512-ibKycbXX8ZZToFshjgWg98BTvFUSvQht8m53Xc+87ye3Z6ZoHJubLjoiDsil8rtW+noWE+Z0+7y0nwLxArU+CQ==}
+  '@types/chrome@0.0.318':
+    resolution: {integrity: sha512-rrtyYQ1t+g7EyG0FejE+UXQBjSGUHGh0RIdXwUT/laPo9T724NOIgXA94ns6ewmNauwijYa5ck3+dBxWnHcynQ==}
 
   '@types/estree@1.0.7':
     resolution: {integrity: sha512-w28IoSUCJpidD/TGviZwwMJckNESJZXFu7NBZ5YJ4mEUnNraUn9Pm8HSZm/jDF1pDWYKspWE7oVphigUPRakIQ==}
@@ -786,8 +786,8 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-react@0.503.0:
-    resolution: {integrity: sha512-HGGkdlPWQ0vTF8jJ5TdIqhQXZi6uh3LnNgfZ8MHiuxFfX3RZeA79r2MW2tHAZKlAVfoNE8esm3p+O6VkIvpj6w==}
+  lucide-react@0.507.0:
+    resolution: {integrity: sha512-XfgE6gvAHwAtnbUvWiTTHx4S3VGR+cUJHEc0vrh9Ogu672I1Tue2+Cp/8JJqpytgcBHAB1FVI297W4XGNwc2dQ==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -1357,7 +1357,7 @@ snapshots:
     dependencies:
       '@babel/types': 7.27.0
 
-  '@types/chrome@0.0.317':
+  '@types/chrome@0.0.318':
     dependencies:
       '@types/filesystem': 0.0.36
       '@types/har-format': 1.2.16
@@ -1652,7 +1652,7 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@0.503.0(react@19.1.0):
+  lucide-react@0.507.0(react@19.1.0):
     dependencies:
       react: 19.1.0
 
