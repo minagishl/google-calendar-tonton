@@ -23,13 +23,7 @@ A Chrome extension that automatically sends [Tonton](https://tonton.amaneku.com/
 pnpm install
 ```
 
-2. Start development server:
-
-```bash
-pnpm dev
-```
-
-3. Build for production:
+2. Build the project:
 
 ```bash
 pnpm build
