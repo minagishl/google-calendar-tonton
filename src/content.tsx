@@ -18,10 +18,11 @@ interface ScheduleData {
 const isTimeInRange = (
   time: string,
   startTime: Date,
-  endTime: Date
+  endTime: Date,
+  scheduleDate: Date
 ): boolean => {
   const [hours, minutes] = time.split(":").map(Number);
-  const timeDate = new Date(startTime);
+  const timeDate = new Date(scheduleDate);
   timeDate.setHours(hours, minutes, 0, 0);
   return timeDate >= startTime && timeDate < endTime;
 };
@@ -174,7 +175,7 @@ const applyCalendarEvents = async (): Promise<void> => {
         return dateEvents.some((event) => {
           const eventStart = new Date(event.startDate);
           const eventEnd = new Date(event.endDate);
-          return isTimeInRange(slot.time, eventStart, eventEnd);
+          return isTimeInRange(slot.time, eventStart, eventEnd, slotDate);
         });
       });
 
