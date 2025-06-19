@@ -15,20 +15,6 @@ A Chrome extension that automatically sends [Tonton](https://tonton.amaneku.com/
 - TypeScript
 - Vite
 
-## Development Setup
-
-1. Install dependencies:
-
-```bash
-pnpm install
-```
-
-2. Build the project:
-
-```bash
-pnpm build
-```
-
 ## Chrome Web Store
 
 You can install this extension from the [Chrome Web Store](https://chromewebstore.google.com/detail/lfgjlkfemoaaindkcgdncghkomgmmemi).
@@ -58,11 +44,32 @@ You can install this extension from the [Chrome Web Store](https://chromewebstor
 
 While this extension is primarily tested on Chrome, it uses [webextension-polyfill](https://github.com/mozilla/webextension-polyfill) which should make it compatible with other modern browsers that support Web Extensions (though this hasn't been extensively tested).
 
-## Requirements
+## Development
 
-- Node.js 20 or higher
-- pnpm package manager
+### Prerequisites
+
+* Node.js 20 or higher
+* pnpm package manager
+
+### Development Setup
+
+1. Clone the repository and install dependencies:
+    ```bash
+    git clone https://github.com/minagishl/google-calendar-tonton.git
+    cd google-calendar-tonton
+    pnpm install
+    ```
+
+2. Start development mode:
+    ```bash
+    pnpm dev
+    ```
+
+3. Build for production:
+    ```bash
+    pnpm build
+    ```
 
 ## License
 
-Please see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
