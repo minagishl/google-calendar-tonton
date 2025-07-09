@@ -1,10 +1,10 @@
+import { Calendar, RotateCcw, X } from "lucide-react";
 import type React from "react";
+import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { useState, useEffect } from "react";
-import { Button } from "./components/Button";
-import { Calendar, X, RotateCcw } from "lucide-react";
-import { icsToJson } from "./utils/icsToJson";
 import browser from "webextension-polyfill";
+import { Button } from "./components/Button";
+import { icsToJson } from "./utils/icsToJson";
 
 interface TimeSlot {
   time: string;
