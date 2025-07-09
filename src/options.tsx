@@ -1,7 +1,23 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Button } from "./components/Button";
 import browser from "webextension-polyfill";
+import { Button } from "./components/Button";
+import { icsToJson } from "./utils/icsToJson";
+
+interface CalendarEvent {
+  summary: string;
+  description: string | null;
+  location: string | null;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
+interface CalendarSource {
+  url: string;
+  cacheTimestamp: string;
+  events: CalendarEvent[];
+}
 
 function Options() {
   const [calendarUrls, setCalendarUrls] = useState<string[]>([""]);
@@ -14,6 +30,9 @@ function Options() {
     "right-top" | "right-bottom" | "left-top" | "left-bottom"
   >("right-top");
   const [minimalMode, setMinimalMode] = useState(false);
+  const [debugMode, setDebugMode] = useState(false);
+  const [calendarData, setCalendarData] = useState<CalendarSource[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Listen for changes in storage
@@ -68,6 +87,7 @@ function Options() {
         "enforceWorkingHours",
         "buttonPosition",
         "minimalMode",
+        "icsCache",
       ]);
 
       if (result.calendarUrls) {
@@ -144,6 +164,75 @@ function Options() {
       .then(() => {
         alert("Settings have been saved");
       });
+  };
+
+  const loadCalendarData = useCallback(async () => {
+    console.log("Loading calendar data...");
+    setIsLoading(true);
+    try {
+      const { icsCache } = await browser.storage.local.get("icsCache");
+      console.log("Retrieved icsCache:", icsCache);
+
+      if (!icsCache) {
+        console.log("No icsCache found, setting empty data");
+        setCalendarData([]);
+        return;
+      }
+
+      const allEvents: CalendarSource[] = [];
+
+      for (const [url, cacheData] of Object.entries(icsCache)) {
+        const cache = cacheData as { data: string; timestamp: number };
+        try {
+          const events = icsToJson(cache.data);
+          console.log(`Parsed ${events.length} events for ${url}`);
+          allEvents.push({
+            url,
+            cacheTimestamp: new Date(cache.timestamp).toLocaleString(),
+            events,
+          });
+        } catch (error) {
+          console.error(`Error parsing ICS data for ${url}:`, error);
+        }
+      }
+
+      console.log("Setting calendar data:", allEvents);
+      setCalendarData(allEvents);
+    } catch (error) {
+      console.error("Error loading calendar data:", error);
+      alert(`Error loading calendar data: ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // watch icsCache changes in real-time
+  useEffect(() => {
+    if (!debugMode) return;
+
+    const handleIcsCacheChange = (
+      changes: { [key: string]: browser.Storage.StorageChange },
+      areaName: string
+    ) => {
+      if (areaName !== "local") return;
+
+      if (changes.icsCache) {
+        loadCalendarData();
+      }
+    };
+
+    browser.storage.onChanged.addListener(handleIcsCacheChange);
+
+    // when debug mode is enabled, load the initial data
+    loadCalendarData();
+
+    return () => {
+      browser.storage.onChanged.removeListener(handleIcsCacheChange);
+    };
+  }, [debugMode, loadCalendarData]);
+
+  const handleDebugToggle = () => {
+    setDebugMode(!debugMode);
   };
 
   return (
@@ -351,6 +440,120 @@ function Options() {
           Use minimal button mode (icon only)
         </label>
       </div>
+      <div style={{ marginBottom: "20px" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <input
+            type="checkbox"
+            checked={debugMode}
+            onChange={handleDebugToggle}
+          />
+          Debug Mode (Show Calendar Data)
+        </label>
+      </div>
+      {debugMode && (
+        <div style={{ marginBottom: "20px" }}>
+          <h2>Calendar Debug Information</h2>
+          <div style={{ marginBottom: "16px" }}>
+            <button
+              type="button"
+              onClick={() => {
+                console.log("Refresh button clicked");
+                loadCalendarData();
+              }}
+              disabled={isLoading}
+              style={{
+                marginRight: "10px",
+                padding: "8px 16px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+                background: isLoading ? "#e0e0e0" : "#f5f5f5",
+                cursor: isLoading ? "not-allowed" : "pointer",
+                opacity: isLoading ? 0.6 : 1,
+              }}
+            >
+              {isLoading ? "Loading..." : "Refresh Calendar Data"}
+            </button>
+            <span style={{ fontSize: "12px", color: "#666" }}>
+              {isLoading
+                ? "Updating..."
+                : `Last updated: ${new Date().toLocaleTimeString()}`}
+            </span>
+          </div>
+          {calendarData.length === 0 ? (
+            <p>No calendar data found in cache.</p>
+          ) : (
+            calendarData.map((calendarSource) => (
+              <div
+                key={calendarSource.url}
+                style={{
+                  marginBottom: "24px",
+                  padding: "16px",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  background: "#f9f9f9",
+                }}
+              >
+                <h3>Calendar Source</h3>
+                <p style={{ overflowWrap: "anywhere" }}>
+                  <strong>URL:</strong> {calendarSource.url}
+                </p>
+                <p>
+                  <strong>Cache Updated:</strong>{" "}
+                  {calendarSource.cacheTimestamp}
+                </p>
+                <p>
+                  <strong>Events Found:</strong> {calendarSource.events.length}
+                </p>
+
+                {calendarSource.events.length > 0 && (
+                  <div style={{ marginTop: "16px" }}>
+                    <h4>Events:</h4>
+                    <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+                      {calendarSource.events.map((event) => (
+                        <div
+                          key={`${event.startDate}-${event.summary}`}
+                          style={{
+                            marginBottom: "12px",
+                            padding: "12px",
+                            border: "1px solid #ccc",
+                            borderRadius: "4px",
+                            background: "#fff",
+                          }}
+                        >
+                          <p>
+                            <strong>Title:</strong> {event.summary}
+                          </p>
+                          <p>
+                            <strong>Start:</strong>{" "}
+                            {new Date(event.startDate).toLocaleString()}
+                          </p>
+                          <p>
+                            <strong>End:</strong>{" "}
+                            {new Date(event.endDate).toLocaleString()}
+                          </p>
+                          <p>
+                            <strong>Status:</strong> {event.status}
+                          </p>
+                          {event.location && (
+                            <p>
+                              <strong>Location:</strong> {event.location}
+                            </p>
+                          )}
+                          {event.description && (
+                            <p>
+                              <strong>Description:</strong> {event.description}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
       <div style={{ display: "flex", alignItems: "center" }}>
         <Button onClick={handleSave} variant="other">
           Save
