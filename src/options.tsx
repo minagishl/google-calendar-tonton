@@ -564,7 +564,7 @@ function Options() {
         <div style={{ marginLeft: "auto", paddingLeft: "40px" }}>
           Please check{" "}
           <a
-            href="https://github.com/minagishl/google-calendar-tonton/"
+            href="https://github.com/minagishl/google-calendar-tonton"
             target="_blank"
             rel="noopener noreferrer"
           >
