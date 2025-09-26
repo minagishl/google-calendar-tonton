@@ -184,7 +184,10 @@ function Options() {
       for (const [url, cacheData] of Object.entries(icsCache)) {
         const cache = cacheData as { data: string; timestamp: number };
         try {
-          const events = icsToJson(cache.data);
+          // For debug display, show events for a wider range
+          const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
+          const endDate = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000); // 60 days from now
+          const events = icsToJson(cache.data, startDate, endDate);
           console.log(`Parsed ${events.length} events for ${url}`);
           allEvents.push({
             url,

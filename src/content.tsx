@@ -120,7 +120,23 @@ const applyCalendarEvents = async (): Promise<void> => {
             return [];
           }
 
-          return icsToJson(response.data);
+          // Calculate date range based on available schedules
+          const earliestDate = new Date(
+            Math.min(...result.map((s) => new Date(s.date).getTime()))
+          );
+          const latestDate = new Date(
+            Math.max(...result.map((s) => new Date(s.date).getTime()))
+          );
+
+          // Add some buffer to ensure we capture all relevant events
+          const startDate = new Date(
+            earliestDate.getTime() - 7 * 24 * 60 * 60 * 1000
+          ); // 7 days before
+          const endDate = new Date(
+            latestDate.getTime() + 7 * 24 * 60 * 60 * 1000
+          ); // 7 days after
+
+          return icsToJson(response.data, startDate, endDate);
         } catch (error) {
           console.error(`Failed to process calendar ${url}:`, error);
           return [];
