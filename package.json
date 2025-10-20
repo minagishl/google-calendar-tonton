@@ -27,7 +27,7 @@
     "@vitejs/plugin-react": "^5.0.3",
     "terser": "^5.39.0",
     "typescript": "5.8.3",
-    "vite": "7.1.7"
+    "vite": "7.1.11"
   },
   "pnpm": {
     "onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
