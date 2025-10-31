@@ -32,17 +32,23 @@ async function handleIcsFetch(url: string) {
     const response = await fetch(url);
     const data = await response.text();
 
-    await browser.storage.local.set({
-      icsCache: {
-        ...cache,
-        [url]: {
-          data,
-          timestamp: now,
+    let cached = false;
+    try {
+      await browser.storage.local.set({
+        icsCache: {
+          ...cache,
+          [url]: {
+            data,
+            timestamp: now,
+          },
         },
-      },
-    });
+      });
+      cached = true;
+    } catch (storageError) {
+      console.warn("Failed to cache ICS data", storageError);
+    }
 
-    return { success: true, data, fromCache: false };
+    return { success: true, data, fromCache: false, cached };
   } catch (error) {
     return {
       success: false,
