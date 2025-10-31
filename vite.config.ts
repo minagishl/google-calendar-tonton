@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 const manifest = defineManifest({
   manifest_version: 3,
   name: "Google Calendar Tonton",
-  version: "1.3.0",
+  version: "1.4.0",
   description: "Auto-send Tonton's schedule from Google Calendar.",
   permissions: ["storage", "unlimitedStorage"],
   host_permissions: ["https://calendar.google.com/*"],

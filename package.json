@@ -1,6 +1,6 @@
 {
   "name": "google-calendar-tonton",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Auto-send Tonton’s schedule from Google Calendar.",
   "type": "module",
   "scripts": {
