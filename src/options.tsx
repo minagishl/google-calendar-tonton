@@ -3,20 +3,12 @@ import { createRoot } from "react-dom/client";
 import browser from "webextension-polyfill";
 import { Button } from "./components/Button";
 import { icsToJson } from "./utils/icsToJson";
-
-interface CalendarEvent {
-  summary: string;
-  description: string | null;
-  location: string | null;
-  startDate: string;
-  endDate: string;
-  status: string;
-}
+import type { ICalEvent } from "./utils/icsToJson";
 
 interface CalendarSource {
   url: string;
   cacheTimestamp: string;
-  events: CalendarEvent[];
+  events: ICalEvent[];
 }
 
 function Options() {

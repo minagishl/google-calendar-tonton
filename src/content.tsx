@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import browser from "webextension-polyfill";
 import { Button } from "./components/Button";
 import { icsToJson } from "./utils/icsToJson";
+import type { ICalEvent } from "./utils/icsToJson";
 
 interface TimeSlot {
   time: string;
@@ -14,18 +15,6 @@ interface ScheduleData {
   date: string;
   availableSlots: TimeSlot[];
 }
-
-const isTimeInRange = (
-  time: string,
-  startTime: Date,
-  endTime: Date,
-  scheduleDate: Date
-): boolean => {
-  const [hours, minutes] = time.split(":").map(Number);
-  const timeDate = new Date(scheduleDate);
-  timeDate.setHours(hours, minutes, 0, 0);
-  return timeDate >= startTime && timeDate < endTime;
-};
 
 const applyCalendarEvents = async (): Promise<void> => {
   // Get saved settings
@@ -151,55 +140,93 @@ const applyCalendarEvents = async (): Promise<void> => {
       console.warn("No calendar events found from any source");
     }
 
+    const eventsByDate = new Map<string, ICalEvent[]>();
+    for (const event of events) {
+      const existing = eventsByDate.get(event.dateKey);
+      if (existing) {
+        existing.push(event);
+      } else {
+        eventsByDate.set(event.dateKey, [event]);
+      }
+    }
+
+    for (const dateEvents of eventsByDate.values()) {
+      dateEvents.sort((a, b) => a.startTimestamp - b.startTimestamp);
+    }
+
     // Process each schedule
     for (const schedule of result) {
       const scheduleDate = new Date(schedule.date);
       const dayOfWeek = scheduleDate.getDay();
+      const processedSlots = new Set<number>();
 
-      for (const slot of schedule.availableSlots) {
+      const slotEntries = schedule.availableSlots.map((slot) => {
         const [hours, minutes] = slot.time.split(":").map(Number);
-        const slotTime = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+        const slotDate = new Date(schedule.date);
+        slotDate.setHours(hours, minutes, 0, 0);
+        return {
+          time: slot.time,
+          timestamp: slotDate.getTime(),
+        };
+      });
 
+      for (const entry of slotEntries) {
         const shouldMarkBusy =
-          // Weekend check
           (autoDeclineWeekends && (dayOfWeek === 0 || dayOfWeek === 6)) ||
-          // Working hours check (only if enforced)
           (shouldEnforceWorkingHours &&
-            (slotTime < workStartTime || slotTime >= workEndTime));
+            (entry.time < workStartTime || entry.time >= workEndTime));
 
-        if (shouldMarkBusy) {
-          markBusyTimeSlots(new Date(`${schedule.date}T${slot.time}`));
+        if (shouldMarkBusy && !processedSlots.has(entry.timestamp)) {
+          processedSlots.add(entry.timestamp);
+          markBusyTimeSlots(new Date(entry.timestamp));
         }
       }
 
-      // If it's a weekend and autoDeclineWeekends is enabled, skip calendar processing
       if (autoDeclineWeekends && (dayOfWeek === 0 || dayOfWeek === 6)) {
         continue;
       }
 
-      // Process calendar events more efficiently
-      const dateEvents = events.filter((event) => {
-        const eventDate = new Date(event.startDate).toISOString().split("T")[0];
-        return eventDate === schedule.date;
-      });
-      const busyTimeSlots = schedule.availableSlots.filter((slot) => {
-        const [hours, minutes] = slot.time.split(":").map(Number);
-        const slotDate = new Date(schedule.date);
-        slotDate.setHours(hours, minutes, 0, 0);
+      const dateEvents = eventsByDate.get(schedule.date) ?? [];
 
-        // Check if the slot overlaps with any event
-        return dateEvents.some((event) => {
-          const eventStart = new Date(event.startDate);
-          const eventEnd = new Date(event.endDate);
-          return isTimeInRange(slot.time, eventStart, eventEnd, slotDate);
-        });
+      if (dateEvents.length === 0) {
+        console.warn("No calendar events found for", schedule.date);
+        continue;
+      }
+
+      const busySlotEntries = slotEntries.filter((entry) => {
+        if (processedSlots.has(entry.timestamp)) {
+          return false;
+        }
+
+        for (const event of dateEvents) {
+          if (event.endTimestamp <= entry.timestamp) {
+            continue;
+          }
+
+          if (event.startTimestamp > entry.timestamp) {
+            break;
+          }
+
+          if (
+            entry.timestamp >= event.startTimestamp &&
+            entry.timestamp < event.endTimestamp
+          ) {
+            return true;
+          }
+        }
+
+        return false;
       });
 
-      if (busyTimeSlots.length === 0) {
+      if (busySlotEntries.length === 0) {
         console.log("No available time slots found");
       } else {
-        for (const slot of busyTimeSlots) {
-          markBusyTimeSlots(new Date(`${schedule.date}T${slot.time}`));
+        for (const entry of busySlotEntries) {
+          if (processedSlots.has(entry.timestamp)) {
+            continue;
+          }
+          processedSlots.add(entry.timestamp);
+          markBusyTimeSlots(new Date(entry.timestamp));
         }
       }
     }
