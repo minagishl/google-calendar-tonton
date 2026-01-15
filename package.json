@@ -16,7 +16,6 @@
   "keywords": ["google-calendar", "chrome-extension"],
   "author": "minagishl",
   "license": "MIT",
-  "packageManager": "pnpm@10.20.0",
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@crxjs/vite-plugin": "2.3.0",
@@ -28,9 +27,6 @@
     "terser": "^5.44.1",
     "typescript": "5.9.3",
     "vite": "7.3.1"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
   },
   "dependencies": {
     "ical.js": "^2.2.1",

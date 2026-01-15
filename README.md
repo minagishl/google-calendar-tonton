@@ -21,7 +21,7 @@ You can install this extension from the [Chrome Web Store](https://chromewebstor
 
 ## Manual Installation
 
-1. Run `pnpm build` to create the production build
+1. Run `bun run build` to create the production build
 2. Open `chrome://extensions` in Chrome browser
 3. Enable "Developer mode" in the top right
 4. Click "Load unpacked" and select the `dist` folder
@@ -49,7 +49,7 @@ While this extension is primarily tested on Chrome, it uses [webextension-polyfi
 ### Prerequisites
 
 * Node.js 20 or higher
-* pnpm package manager
+* Bun package manager
 
 ### Development Setup
 
@@ -57,17 +57,17 @@ While this extension is primarily tested on Chrome, it uses [webextension-polyfi
     ```bash
     git clone https://github.com/minagishl/google-calendar-tonton.git
     cd google-calendar-tonton
-    pnpm install
+    bun install
     ```
 
 2. Start development mode:
     ```bash
-    pnpm dev
+    bun run dev
     ```
 
 3. Build for production:
     ```bash
-    pnpm build
+    bun run build
     ```
 
 ## License
